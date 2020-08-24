@@ -74,6 +74,7 @@ void local_init();
 void local_done();
 
 void polar();
+void hyper();
 void optrot(std::shared_ptr<Molecule> molecule);
 void roa();
 
@@ -127,6 +128,7 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     preppert(ref_wfn->basisset());
 
     if (params.prop == "POLARIZABILITY") polar();
+    if (params.prop == "HYPERPOLARIZABILITY") hyper();	
     if (params.prop == "ROTATION") optrot(ref_wfn->molecule());
     if (params.prop == "ROA_TENSOR") roa();
 
