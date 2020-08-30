@@ -732,10 +732,6 @@ outfile->Printf("\n I am here5");
     global_dpd_->buf4_close(&L2);  
 
 
-           Y2_norm = global_dpd_->buf4_dot_self(&Y2new);
-           Y2_norm = sqrt(Y2_norm);
-           outfile->Printf("\n\tTODAY NORM Y2NEW FINAL!!!!! %20.15f\n", Y2_norm);
-
 
     // **** <O|L2(0)|[Hbar(0), X2]|phi^ab_ij> ****
 
@@ -972,6 +968,12 @@ outfile->Printf("\n I am here5");
     global_dpd_->buf4_init(&Z2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, "Z2 (ij,ab)");
     global_dpd_->buf4_axpy(&Z2, &Y2new, 1);
     global_dpd_->buf4_close(&Z2);
+
+
+           Y2_norm = global_dpd_->buf4_dot_self(&Y2new);
+           Y2_norm = sqrt(Y2_norm);
+           outfile->Printf("\n\tTODAY NORM Y2NEW FINAL!!!!! %20.15f\n", Y2_norm);
+
 
 //    if (params.local)
 //        local_filter_T2(&Y2new);
