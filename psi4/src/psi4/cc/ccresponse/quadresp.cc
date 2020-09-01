@@ -65,17 +65,35 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
         psio_open(j, 0);
     }
 
-    hyper_YCX = 0.0;
+    hyper = 0.0;
 
-    if ((x_irrep ^ y_irrep) == 0) {
+    if ((x_irrep ^ y_irrep ^ z_irrep ) == 0) {
         //if (omega_y != 0.0) { // we assume omega_x = -omega_y 
         timer_on("linear terms");
-        hyper_YCX = YCX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
+	//pert A: pert_x
+        //pert B: pert_y
+        //pert C: pert_z
+
+        //<O|Y1(B)[Abar,X1(C)]|0>
+        hyper += YCX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);
+        //<O|Y1(C)[Abar,X1(B)]|0>
+        hyper += YCX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
+        //<0|L1(A)[B_bar,X1(C)]|0>
+        hyper += YCX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
+        //<0|L1(C)|[B_bar,X1(A)]|0> 
+        hyper += YCX(pert_z, z_irrep, omega_z, pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x);
+        //<0|L1(A)[C_bar,X1(B)]|0>
+        hyper += YCX(pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z, pert_y, y_irrep, omega_y);
+        //<0|L1(B)|[C_bar,X1(A)]|0>
+        hyper += YCX(pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x);
+
+	outfile->Printf("\n\tNorm of the hyper Final.... %20.15f\n", hyper);	
+
         timer_off("linear terms");
     }
 
-     hyper = hyper_YCX;
-    
+     //hyper = hyper_YCX;
+
     *tensor =  hyper; 
     //*tensor = A * hyper + B * (*tensor); 
 
