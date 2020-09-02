@@ -105,7 +105,7 @@ void hyper() {
 
 			//TEST
 			//outfile->Printf("Test hyperpolarizability %d, %d, %d\n", alpha, beta, gamma);
-	     		outfile->Printf("Test hyperpolarizability %d, %d, %d, %5.8f\n", alpha, beta, gamma, tensor[alpha][beta][gamma]);
+	     		//outfile->Printf("Test hyperpolarizability %d, %d, %d, %5.8f\n", alpha, beta, gamma, tensor[alpha][beta][gamma]);
 			//END TEST		                  
                         //linresp(&tensor[i][alpha][beta], -1.0, 0.0, pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                         //    pert_y, moinfo.mu_irreps[beta], params.omega[i]);
