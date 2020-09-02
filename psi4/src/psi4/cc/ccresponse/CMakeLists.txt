@@ -58,4 +58,5 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/G.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/diis_Y.cc   
     ${CMAKE_CURRENT_SOURCE_DIR}/L2HX2.cc  
+    ${CMAKE_CURRENT_SOURCE_DIR}/LCXX.cc 
 )
