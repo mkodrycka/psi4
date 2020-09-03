@@ -49,6 +49,8 @@ double YCX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, 
                const char *pert_z, int irrep_z, double omega_z);
 double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x, int irrep_x, double omega_x,
                      const char *pert_y, int irrep_y, double omega_y); 
+double HXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
+                     const char *pert_z, int irrep_z, double omega_z);
 
 double HXY(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y);
 double LHX1Y1(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y);
@@ -89,14 +91,15 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
         hyper += YCX(pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z, pert_y, y_irrep, omega_y);
         //<0|L1(B)|[C_bar,X1(A)]|0>
         hyper += YCX(pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x);
+        timer_off("linear terms");
  
         hyper += LCXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
         hyper += LCXX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);	
         hyper += LCXX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);       
 
-        outfile->Printf("\n\tNorm of the hyper Final.... %20.15f\n", hyper);	
+        hyper += HXXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
 
-        timer_off("linear terms");
+        outfile->Printf("\n\tNorm of the hyper Final.... %20.15f\n", hyper);	
     }
 
      //hyper = hyper_YCX;
