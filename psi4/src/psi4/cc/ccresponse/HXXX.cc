@@ -205,7 +205,7 @@ double HX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *p
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
     global_dpd_->contract424(&W, &X1, &XW, 3, 1, 1, 1, 0);
-    //global_dpd_->contract244(&X1, &W, &XW, 1, 3, 1, 1, 0);
+//    global_dpd_->contract244(&X1, &W, &XW, 1, 3, 1, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&W);
 
@@ -214,19 +214,83 @@ double HX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *p
            outfile->Printf("\n\tTODAY XW!!!!! %20.15f\n", Y2_norm);
 
 
-    global_dpd_->buf4_init(&Z, PSIF_CC_TMP1, 0, 11, 0, 11, 0, 0, "Z(aj,kl)");
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 11, 0, 11, 0, 0, "Z(al,kj)");
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
-    global_dpd_->contract244(&X1, &XW, &Z, 1, 2, 0, 1, 0);
-    //global_dpd_->contract424(&XW, &X1, &Z, 2, 1, 0, 1, 0);
+    //global_dpd_->contract244(&X1, &XW, &Z, 1, 2, 0, 1, 0);
+    global_dpd_->contract424(&XW, &X1, &Z, 2, 1, 1, 1, 0);
     global_dpd_->buf4_close(&XW);
     global_dpd_->file2_close(&X1);
-
 
            Y2_norm = global_dpd_->buf4_dot_self(&Z);
            Y2_norm = sqrt(Y2_norm);
            outfile->Printf("\n\tTODAY Z!!!!! %20.15f\n", Y2_norm);
+
+
+    global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, srqp, 0, 10, "Z(jk,la)");
+    global_dpd_->buf4_close(&Z);
+
+
+    global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "XL(ij,la)");
+    sprintf(lbl, "X_%s_IA (%5.3f)", pert_z, omega_z);
+    global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_z, 0, 1, lbl);
+    global_dpd_->buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
+    //global_dpd_->contract424(&l2, &X1, &XL, 2, 1, 1, 1, 0);
+    global_dpd_->contract244(&X1, &l2, &XL, 1, 2, 0, 1, 0);
+    global_dpd_->file2_close(&X1);
+    global_dpd_->buf4_close(&l2);
+
+
+           Y2_norm = global_dpd_->buf4_dot_self(&XL);
+           Y2_norm = sqrt(Y2_norm);
+           outfile->Printf("\n\tTODAY Z!!!!! %20.15f\n", Y2_norm);
+
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "Z(jk,la)");
+
+    result = global_dpd_->buf4_dot(&XL,&Z);
+    //result = global_dpd_->buf4_dot_self(&Z);
+
+    global_dpd_->buf4_close(&XL);
+    global_dpd_->buf4_close(&Z);
+
+    outfile->Printf("\n\tResult:  %20.15f\n", result);
+
+    return result;
+}
+
+
+double HX1X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
+                      const char *pert_z, int irrep_z, double omega_z) {
+
+    double result = 0.0;
+    dpdfile2 Y1, yt, lx;
+    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
+    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W;
+    char lbl[32];
+    double Y1_norm, Y2_norm;
+
+    global_dpd_->buf4_init(&XW, PSIF_CC_TMP0, 0, 11, 10, 11, 10, 0, "XW(aj,lb)");
+
+    sprintf(lbl, "X_%s_IA (%5.3f)", pert_x, omega_x);
+    global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
+    global_dpd_->contract244(&X1, &W, &XW, 1, 2, 1, 1, 0);
+    global_dpd_->file2_close(&X1);
+    global_dpd_->buf4_close(&W);
+
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 11, 0, 11, 0, 0, "Z(al,kj)");
+
+    sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
+    global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
+    global_dpd_->contract424(&XW, &X1, &Z, 3, 1, 0, 1, 0);
+    global_dpd_->buf4_close(&XW);
+    global_dpd_->file2_close(&X1);
+
+
+    global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, rspq, 0, 11, "Z(jk,al)");
+    global_dpd_->buf4_close(&Z);
+
 
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, "XL(ij,al)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_z, omega_z);
@@ -236,16 +300,19 @@ double HX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *p
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
 
-           Y2_norm = global_dpd_->buf4_dot_self(&XL);
-           Y2_norm = sqrt(Y2_norm);
-           outfile->Printf("\n\tTODAY Z!!!!! %20.15f\n", Y2_norm);
 
+    //       Y2_norm = global_dpd_->buf4_dot_self(&XL);
+    //       Y2_norm = sqrt(Y2_norm);
+    //       outfile->Printf("\n\tTODAY Z!!!!! %20.15f\n", Y2_norm);
+
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, "Z(jk,al)");
 
     result = global_dpd_->buf4_dot(&XL,&Z);
 
     global_dpd_->buf4_close(&XL);
     global_dpd_->buf4_close(&Z);
 
+    //outfile->Printf("\n\tResult:  %20.15f\n", result);
 
     return result;
 }
@@ -254,6 +321,7 @@ double HX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *p
 
 double HXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
 		     const char *pert_z, int irrep_z, double omega_z) {
+
     double hyper = 0.0;
     dpdfile2 Y1, yt, lx;
     dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
@@ -281,6 +349,11 @@ double HXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y,
     hyper += HX1X1X1_p2(pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z, pert_x, irrep_x, omega_x);
     hyper += HX1X1X1_p2(pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y, pert_x, irrep_x, omega_x);    
 
+    //hyper -= HX1X1X1_p3(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
+
+    hyper -= HX1X1X1_p4(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
+    hyper -= HX1X1X1_p4(pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y);
+    hyper -= HX1X1X1_p4(pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z, pert_x, irrep_x, omega_x);
     outfile->Printf("\n\tHYPER G1:  %20.15f\n", hyper);
 
 
