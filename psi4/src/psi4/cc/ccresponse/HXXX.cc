@@ -45,11 +45,11 @@ namespace ccresponse {
 
 double HXXX_p1(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
 		      const char *pert_z, int irrep_z, double omega_z) {
+
     double result = 0.0;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lx, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D;
+    dpdfile2 X1, z, z1, l1, lx;
+    dpdbuf4 D; 
     char lbl[32];
-    double Y1_norm;
 
     global_dpd_->file2_init(&z, PSIF_CC_TMP0, 0, 0, 1, "z_IA");
 
@@ -91,11 +91,9 @@ double HX1X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W;
+    dpdfile2 X1; 
+    dpdbuf4 l2, W, XW, XL, Z; 
     char lbl[32];
-    double Y1_norm, Y2_norm;    
 
     global_dpd_->buf4_init(&XW, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "XW(ij,kl)");
 
@@ -141,11 +139,9 @@ double HX1X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W;
+    dpdfile2 X1; 
+    dpdbuf4 l2, Z, XW, XL, W;
     char lbl[32];
-    double Y1_norm, Y2_norm;
 
     global_dpd_->buf4_init(&XW, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "XW(ij,kl)");
 
@@ -191,11 +187,9 @@ double HX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W;
+    dpdfile2 X1; 
+    dpdbuf4 l2, Z, XW, XL, W;
     char lbl[32];
-    double Y1_norm, Y2_norm;
 
     global_dpd_->buf4_init(&XW, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "XW(aj,bl)");
 
@@ -242,11 +236,9 @@ double HX1X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W;
+    dpdfile2 X1; 
+    dpdbuf4 l2, Z, XW, XL, W;
     char lbl[32];
-    double Y1_norm, Y2_norm;
 
     global_dpd_->buf4_init(&XW, PSIF_CC_TMP0, 0, 11, 10, 11, 10, 0, "XW(aj,lb)");
 
@@ -294,12 +286,9 @@ double HX2X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W, XD;
+    dpdfile2 X1; 
+    dpdbuf4 l2, X2, Z, XD, XL, D;
     char lbl[32];
-    double Y1_norm, Y2_norm;
-
 
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, "XL(ij,al)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_x, omega_x);
@@ -352,12 +341,9 @@ double HX2X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 xl_ab, dx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W, XD;
+    dpdfile2 X1, xl_ab, z, dx;
+    dpdbuf4 l2, X2, D;
     char lbl[32];
-    double Y1_norm, Y2_norm;
-
 
     global_dpd_->file2_init(&xl_ab, PSIF_CC_OEI, irrep_x, 1, 1, "xl_AB");
 
@@ -400,12 +386,9 @@ double HX2X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 xl_ij, dx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W, XD;
+    dpdfile2 X1, xl_ij, dx, z;
+    dpdbuf4 l2, X2, D;
     char lbl[32];
-    double Y1_norm, Y2_norm;
-
 
     global_dpd_->file2_init(&xl_ij, PSIF_CC_OEI, irrep_x, 0, 0, "xl_IJ");
 
@@ -448,11 +431,9 @@ double HX2X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1,  z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W, XD;
+    dpdfile2 X1;
+    dpdbuf4 l2, X2, Z, XD, XL, D;
     char lbl[32];
-    double Y1_norm, Y2_norm;
 
     global_dpd_->buf4_init(&XD, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "XD(ij,kl)");
 
@@ -494,11 +475,9 @@ double HX2X1X1_p5(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W, XD;
+    dpdfile2 X1;
+    dpdbuf4 l2, X2, Z, XD, XL, D;
     char lbl[32];
-    double Y1_norm, Y2_norm;
 
     global_dpd_->buf4_init(&XD, PSIF_CC_TMP0, 0, 10, 0, 10, 0, 0, "XD(ia,jl)");
 
@@ -553,11 +532,9 @@ double HX2X1X1_p6(const char *pert_x, int irrep_x, double omega_x, const char *p
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W, XD;
+    dpdfile2 X1;
+    dpdbuf4 l2, X2, Z, XD, XL, D;
     char lbl[32];
-    double Y1_norm, Y2_norm;
 
     global_dpd_->buf4_init(&XD, PSIF_CC_TMP0, 0, 10, 0, 10, 0, 0, "XD(ia,jl)");
 
@@ -610,16 +587,13 @@ double HX2X1X1_p6(const char *pert_x, int irrep_x, double omega_x, const char *p
 }
 
 
-
 double HX2X1X1_p7(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, XW, XL, W, XD;
+    dpdfile2 X1;
+    dpdbuf4 l2, X2, Z, XD, XL, D;
     char lbl[32];
-    double Y1_norm, Y2_norm;
 
     global_dpd_->buf4_init(&XD, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, "XD(ij,al)");
 
@@ -668,11 +642,6 @@ double HXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y,
 		     const char *pert_z, int irrep_z, double omega_z) {
 
     double hyper = 0.0;
-    dpdfile2 Y1, yt, lx;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
-    dpdbuf4 X2, Y2, l2, mu2, z2, Z, D, Z2, W, XW, XL;
-    char lbl[32];
-    double Y1_norm, Y2_norm;
 
 
     /*** <L1(0)|[[[H_bar,X1(A)],X1(B)],X1(C)]|0> ***/ 
