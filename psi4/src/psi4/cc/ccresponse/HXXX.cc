@@ -643,7 +643,6 @@ double HXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y,
 
     double hyper = 0.0;
 
-
     /*** <L1(0)|[[[H_bar,X1(A)],X1(B)],X1(C)]|0> ***/ 
 
     hyper -= HXXX_p1(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z); 
