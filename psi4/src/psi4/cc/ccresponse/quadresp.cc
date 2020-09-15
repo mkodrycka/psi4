@@ -51,6 +51,9 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
                      const char *pert_y, int irrep_y, double omega_y); 
 double LHXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
                      const char *pert_z, int irrep_z, double omega_z);
+double YHXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
+                     const char *pert_z, int irrep_z, double omega_z);
+
 
 double HXY(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y);
 double LHX1Y1(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y);
@@ -99,6 +102,7 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
 
         hyper += LHXXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
 
+        hyper += YHXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
         outfile->Printf("\n\tNorm of the hyper Final.... %20.15f\n", hyper);	
     }
 
