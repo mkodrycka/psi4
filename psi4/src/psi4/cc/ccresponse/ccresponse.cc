@@ -69,6 +69,7 @@ void hbar_extra();
 void cc2_hbar_extra();
 void sort_lamps();
 void lambda_residuals();
+void lambda_2();
 
 void local_init();
 void local_done();
@@ -128,7 +129,10 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     preppert(ref_wfn->basisset());
 
     if (params.prop == "POLARIZABILITY") polar();
-    if (params.prop == "HYPERPOLARIZABILITY") hyper();	
+    if (params.prop == "HYPERPOLARIZABILITY") {
+       lambda_2();
+       hyper();	
+       }
     if (params.prop == "ROTATION") optrot(ref_wfn->molecule());
     if (params.prop == "ROA_TENSOR") roa();
 

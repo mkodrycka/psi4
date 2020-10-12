@@ -240,6 +240,12 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_axpy(&mu1, &Y1new, 2, 0);  
     global_dpd_->file2_close(&mu1);
 
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tTest0: %20.15f\n", Y1_norm);
+
+
     /*** L1 * MuBAR + L2 * MuBAR ***/
 
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1"); 
@@ -247,6 +253,13 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_init(&mu1, PSIF_CC_OEI, irrep, 0, 0, lbl);
     global_dpd_->contract222(&mu1, &L1, &Y1new, 0, 1, -1, 1.0);
     global_dpd_->file2_close(&mu1);
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&L1);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tL1: %20.15f\n", Y1_norm);
+
+
 
     sprintf(lbl, "%sBAR_AE", pert);
     global_dpd_->file2_init(&mu1, PSIF_CC_OEI, irrep, 1, 1, lbl);
@@ -257,7 +270,13 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     sprintf(lbl, "%s_IA", pert);
     global_dpd_->file2_init(&mu1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->file2_init(&lt, PSIF_CC_OEI, 0, 0, 0, "Lt_IJ");
-    global_dpd_->contract222(&lt, &mu1, &Y1new, 0, 1, 1, 1.0);
+    global_dpd_->contract222(&lt, &mu1, &Y1new, 0, 1, 2, 1.0);   //I multiplied by 2
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tTest0: %20.15f\n", Y1_norm);
+
 
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa"); 
     sprintf(lbl, "%sBAR_MbIj", pert, omega);
@@ -287,6 +306,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&mu2);
     //END HERE
 
+
      //-----------------------
 
     // <O|[Hbar(0), X1]|0>
@@ -296,6 +316,12 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract422(&D, &X1, &Y1new, 0, 0, 2, 1); 
     global_dpd_->buf4_close(&D); 
     global_dpd_->file2_close(&X1);   
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tTest1a: %20.15f\n", Y1_norm);
+
 
 
     // <O|L1(0)|[Hbar(0), X1]|0>
@@ -373,6 +399,10 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_close(&L1); 
     global_dpd_->buf4_close(&Z);
  
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tTest2a: %20.15f\n", Y1_norm);
  
     // <O|L2(0)|[Hbar(0), X1]|0>
     //************This part of the code take straight from L2.cc******************
@@ -383,7 +413,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "Znew(ij,ab)");
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
-    global_dpd_->contract444(&W, &L2, &Z, 0, 1, 0.5, 0);
+    global_dpd_->contract444(&W, &L2, &Z, 0, 1, 0.5, 0); 
     global_dpd_->buf4_close(&L2);
     global_dpd_->buf4_close(&W);
 
@@ -416,8 +446,11 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
 
     //******** COmbine these two!! ***************************
     //Hvvvv x L2    
-    global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2");
+    //global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2");
+    //global_dpd_->buf4_scm(&WL, 2); //I multiplied by 2
+    //global_dpd_->buf4_close(&WL);
 
+    global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2");
     global_dpd_->buf4_scmcopy(&WL, PSIF_CC_LAMPS, "WefabL2 2(ij,ab) - (ij,ba)", 2);
     global_dpd_->buf4_sort_axpy(&WL, PSIF_CC_LAMPS, pqsr, 0, 5, "WefabL2 2(ij,ab) - (ij,ba)", -1);
     global_dpd_->buf4_close(&WL);
@@ -429,7 +462,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ji,ab) - (ji,ba)"); 
     //sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     //global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
-    global_dpd_->buf4_axpy(&WL, &Z, 0.5);
+    global_dpd_->buf4_axpy(&WL, &Z, 0.5); 
     global_dpd_->buf4_close(&WL); 
     //global_dpd_->file2_close(&X1); 
 
@@ -442,14 +475,32 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ij,ba) - (ij,ab)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
-    global_dpd_->buf4_axpy(&WL, &Z, 0.5);
+    global_dpd_->buf4_axpy(&WL, &Z, 0.5); 
     global_dpd_->dot23(&X1, &Z, &Y1new, 0, 0, 1, 1);	
     global_dpd_->buf4_close(&WL);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&Z);
 
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tTEST 2b: %20.15f\n", Y1_norm);
+
+
     //Improve this part....
     //Build Gae*.Loovv -> Take it straight from L2???
+    //I multiplied GAE and GMI by 2!!!!!!!!!!!!!!!!!
+    //############################################################
+//    global_dpd_->file2_init(&GAE, PSIF_CC_LAMBDA, 0, 1, 1, "GAE");
+//    global_dpd_->file2_scm(&GAE, 2); //I multiplied by 2
+//    global_dpd_->file2_close(&GAE);
+ 
+//    global_dpd_->file2_init(&GMI, PSIF_CC_LAMBDA, 0, 0, 0, "GMI");
+//    global_dpd_->file2_scm(&GMI, 2); //I multiplied by 2
+//    global_dpd_->file2_close(&GMI);
+    //############################################################
+
     global_dpd_->file2_init(&z1, PSIF_CC_OEI, 0, 0, 1, "Z_ia");
     global_dpd_->file2_init(&GAE, PSIF_CC_LAMBDA, 0, 1, 1, "GAE");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
@@ -484,6 +535,11 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&Z2);
 
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tTEST 2c: %20.15f\n", Y1_norm);
+
 
 /*
     // Type-I L2 residual 
@@ -505,8 +561,15 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&L2);
 
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "LHX1Y1 Residual IItest");
-    global_dpd_->contract422(&L2, &X1, &Y1new, 0, 0, -1, 1);
+    global_dpd_->contract422(&L2, &X1, &Y1new, 0, 0, -1, 1); 
     global_dpd_->file2_close(&X1);
+
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tTest2: %20.15f\n", Y1_norm);
+
 
 
     //# <O|L1(0)|[Hbar(0), X2]|phi^a_i>
@@ -844,12 +907,10 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&W);
 
 
-/*
     Y1_norm = 0;
     Y1_norm = global_dpd_->file2_dot_self(&Y1new);
     Y1_norm = sqrt(Y1_norm);
     outfile->Printf("\tNorm of the Y1new part1i_Final.... %20.15f\n", Y1_norm);
-*/
 
 
     global_dpd_->file2_close(&Y1new);

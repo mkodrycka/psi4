@@ -522,7 +522,7 @@ double LHX2X1X1_p5(const char *pert_x, int irrep_x, double omega_x, const char *
     dpdbuf4 l2, X2, Z, XD, XL, D;
     char lbl[32];
 
-    sprintf(lbl, "XD_%s (ij,kl) (%5.3f)", pert_x, omega_x);
+    sprintf(lbl, "XD_%s (ia,jk) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&XD, PSIF_CC_TMP0, irrep_x, 10, 0, 10, 0, 0, lbl);
 
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D (ia|jb)"); 
@@ -765,8 +765,8 @@ double LHXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y
 
     hyper += LHX2X1X1_p4(pert_y, irrep_y, omega_y, pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z);
 
-//    hyper += LHX2X1X1_p5(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
-//    hyper += LHX2X1X1_p5(pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y, pert_x, irrep_x, omega_x);
+    hyper += LHX2X1X1_p5(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
+    hyper += LHX2X1X1_p5(pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y, pert_x, irrep_x, omega_x);
 
     hyper += LHX2X1X1_p6(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
     hyper += LHX2X1X1_p6(pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y, pert_x, irrep_x, omega_x);
@@ -787,16 +787,14 @@ double LHXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y
 
     hyper += LHX2X1X1_p4(pert_z, irrep_z, omega_z, pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y);
 
-//    hyper += LHX2X1X1_p5(pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y);
-//    hyper += LHX2X1X1_p5(pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z, pert_x, irrep_x, omega_x);
+    hyper += LHX2X1X1_p5(pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y);
+    hyper += LHX2X1X1_p5(pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z, pert_x, irrep_x, omega_x);
 
     hyper += LHX2X1X1_p6(pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y);
     hyper += LHX2X1X1_p6(pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z, pert_x, irrep_x, omega_x);
 
     hyper += LHX2X1X1_p7(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
 
-
-    outfile->Printf("\n\tHYPER G1:  %20.15f\n", hyper);
 
     return hyper;
 }

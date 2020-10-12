@@ -242,11 +242,6 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_close(&Z2);
 
 
-    Y1_norm = global_dpd_->buf4_dot_self(&Z);
-    Y1_norm = sqrt(Y1_norm);
-    outfile->Printf("\n \tNorm of Z %20.15f\n", Y1_norm);
-
-
     global_dpd_->file2_init(&z_ia, PSIF_CC_OEI, 0, 0, 1, "z2_ia");
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
@@ -341,7 +336,6 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->file2_close(&z_ij);
 
 
-
     // tmp = np.einsum('ijab,jkba->ik',self.t2,self.y2_A)
     // tmp2 = np.einsum('ld,lidc->ic',self.x1_C,self.Loovv)
     // tmp2 = np.einsum('ic,kc->ik',tmp2,self.x1_B)
@@ -409,8 +403,6 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
 
     global_dpd_->file2_close(&z_ia);
     global_dpd_->file2_close(&z2_ia);
-
-outfile->Printf("\n\tResult Result:  %20.15f\n", result);
 
 
     return result;
@@ -767,9 +759,6 @@ double Y2HX2X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
 
     global_dpd_->buf4_close(&Z_final);
     global_dpd_->buf4_close(&X2);
-
-
-    //outfile->Printf("\n\tResult B1:  %20.15f\n", result);
 
 
     return result;
@@ -1293,12 +1282,6 @@ double Y2HX1X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&W);
 
-    Y1_norm = 0;
-    Y1_norm = global_dpd_->buf4_dot_self(&Z);
-    Y1_norm = sqrt(Y1_norm);
-    //outfile->Printf("\t Z: .... %20.15f\n", Y1_norm);
-
-
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "Z2 (ij,kl)");
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_z, omega_z);
@@ -1308,11 +1291,6 @@ double Y2HX1X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->contract444(&X2, &Y2, &Z2, 0, 0, 1, 0);
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&Y2);
-
-    Y1_norm = 0;
-    Y1_norm = global_dpd_->buf4_dot_self(&Z2);
-    Y1_norm = sqrt(Y1_norm);
-    //outfile->Printf("\t Z2: .... %20.15f\n", Y1_norm);
 
     result += global_dpd_->buf4_dot(&Z, &Z2);
 
@@ -1343,15 +1321,8 @@ double Y2HX1X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&Z);
 
-    Y1_norm = 0;
-    Y1_norm = global_dpd_->buf4_dot_self(&Z2);
-    Y1_norm = sqrt(Y1_norm);
-    //outfile->Printf("\t Z2: .... %20.15f\n", Y1_norm);
-
-
     global_dpd_->buf4_sort(&Z2, PSIF_CC_TMP0, qrps, 0, 10, "Z2 (ik,ja)"); 
     global_dpd_->buf4_close(&Z2);
-
 
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "Z2 (ik,ja)");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 10, 0, 10, 0, "WMnIe");
@@ -1393,16 +1364,10 @@ double Y2HX1X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "Z2 (ik,ja)");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 10, 0, 10, 0, "WMnIe");
 
-
     result += global_dpd_->buf4_dot(&Z2, &W);
 
     global_dpd_->buf4_close(&Z2);
     global_dpd_->buf4_close(&W);
-
-
-
-    outfile->Printf("\n\tResult B1:  %20.15f\n", result);
-
 
     return result;
 
@@ -1420,42 +1385,29 @@ double YHXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y,
 
     hyper += Y1HX1X1(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z); 
 
-    outfile->Printf("\n\tHYPER B1:  %20.15f\n", hyper);
-
    // ***  <O|Y2(A)|[[Hbar(0),X1(B)],X1(C)]|0> ***
 
     hyper += Y2HX1X1(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
-
-    outfile->Printf("\n\tHYPER B1:  %20.15f\n", hyper);
 
    // ***  <O|Y2(A)|[[Hbar(0),X2(B)],X2(C)]|0> ***
 
     hyper += Y2HX2X2(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);    
 
-    outfile->Printf("\n\tHYPER B1:  %20.15f\n", hyper);
-
    // *** <O|Y1(A)[[Hbar(0),X1(B)],X2(C)]]|0> ***  
    
     hyper += Y1HX1X2(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
-
-//    outfile->Printf("\n\tHYPER B1:  %20.15f\n", hyper);
 
    // *** <O|Y2(A)[[Hbar(0),X1(B)],X2(C)]]|0> ***  
 
    hyper += Y2HX1X2(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
 
-//   outfile->Printf("\n\tHYPER B1:  %20.15f\n", hyper);
-
    // *** <O|Y1(A)[[Hbar(0),X2(B),X1(C)]]|0> ***
 
    hyper += Y1HX1X2(pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y);
 
-//   outfile->Printf("\n\tHYPER B1:  %20.15f\n", hyper);
    // *** <O|Y2(A)[[Hbar(0),X2(B)],X1(C)]]|0> ***   
 
     hyper += Y2HX1X2(pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y);
-
-    outfile->Printf("\n\tHYPER B1:  %20.15f\n", hyper);
 
     return hyper;
 }

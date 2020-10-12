@@ -52,7 +52,7 @@ void local_filter_T2(dpdbuf4 *T2);
 
 void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     dpdfile2 Y1, z, F, GAE, GMI, t1;
-    dpdbuf4 Y2, Y2new, Y2inhomo, W, D,  Z, Z1, Z2, B;
+    dpdbuf4 Y2, Y2new, Y2inhomo, W, D, Z, Z1, Z2, B, I, T2, Z_final;
     char lbl[32];
     int Gej, Gab, Gij, Ge, Gj, Gi, Ga, i, j, ij, ab, nrows, length, E, e, II;
     int Gbm, Gfe, bm, a, b, m, Gb, Gm, Gf, M, fe, f, ef, ncols;
@@ -91,14 +91,6 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     sprintf(lbl, "Y_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&Y1, PSIF_CC_OEI, irrep, 0, 1, lbl);
 
-           Y2_norm = global_dpd_->file2_dot_self(&Y1);
-           Y2_norm = sqrt(Y2_norm);
-           outfile->Printf("\tNorm of Y1 HERE!!!!!! %20.15f\n", Y2_norm);
-
-           Y2_norm = global_dpd_->file2_dot_self(&F);
-           Y2_norm = sqrt(Y2_norm);
-           outfile->Printf("\tNorm of F HERE!!!!!! %20.15f\n", Y2_norm);
-
 
     global_dpd_->file2_mat_init(&F);
     global_dpd_->file2_mat_rd(&F);
@@ -122,7 +114,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
                for(ab = 0; ab < Z.params->coltot[Gij]; ab++) {
                    a = Z.params->colorb[Gab][ab][0];
                    b = Z.params->colorb[Gab][ab][1];
-                   Z.matrix[Gij][ij][ab]  = 2*Y1.matrix[Gi][i][a] * F.matrix[Gj][j][b]; // mu1.matrix[Gi][i][b]; //L1.matrix[Gj][j][a];
+                   Z.matrix[Gij][ij][ab]  = 2*Y1.matrix[Gi][i][a] * F.matrix[Gj][j][b]; 
                    Z.matrix[Gij][ij][ab] -=  Y1.matrix[Gj][j][a] * F.matrix[Gi][i][b];
                }
            }
@@ -352,6 +344,80 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract244(&GMI, &D, &Y2new, 0, 0, 0, -1.0, 1.0);
     global_dpd_->file2_close(&GMI);
     global_dpd_->buf4_close(&D);    
+
+
+    //global_dpd_->buf4_close(&Y2new);
+
+//##########################TEST################################################
+
+    //r_y2 += ndot('ijef,efab->ijab', self.y2, self.Hvvvv, prefactor=0.5)
+
+    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+
+    global_dpd_->buf4_scm(&Z_final, 0);
+
+    sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+
+    sprintf(lbl, "Z(Ab,Ij) %s", pert);
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 5, 0, 5, 0, 0, lbl);
+    global_dpd_->buf4_init(&I, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
+    global_dpd_->contract444(&I, &Y2, &Z, 0, 0, 1, 0);
+    global_dpd_->buf4_close(&I);
+
+
+    global_dpd_->buf4_close(&Z_final); // Need to close X2new to avoid collisions /
+    //sprintf(lbl, "New Y_%s_IjAb (%5.3f)", pert, omega);
+    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert, omega);  
+    global_dpd_->buf4_sort_axpy(&Z, PSIF_CC_LR, rspq, 0, 5, lbl, 1);
+    global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); // re-open X2new here /
+    global_dpd_->buf4_close(&Z);
+
+    sprintf(lbl, "Z(Ij,am) %s", pert);
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 11, 0, 11, 0, lbl);
+    global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->contract424(&Y2, &t1, &Z, 3, 1, 0, 1, 0);
+    global_dpd_->file2_close(&t1);
+
+    sprintf(lbl, "Z(Ij,Ab) %s", pert);
+    global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&I, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
+    global_dpd_->contract444(&Z, &I, &Z1, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&Z);
+
+    //global_dpd_->buf4_axpy(&Z1, &Y2new, -1);
+    global_dpd_->buf4_axpy(&Z1, &Z_final, -1);
+
+
+    //global_dpd_->buf4_close(&Y2new); // Need to close X2new to avoid collisions /
+    global_dpd_->buf4_close(&Z_final);
+    //sprintf(lbl, "New Y_%s_IjAb (%5.3f)", pert, omega);
+    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert, omega);
+    global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_LR, qpsr, 0, 5, lbl, -1);
+    //global_dpd_->buf4_init(&Y2new, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); // re-open X2new here 
+    global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_close(&Z1);
+
+
+    sprintf(lbl, "Z(Ij,Mn) %s", pert);
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 0, 0, 0, 0, lbl);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+    global_dpd_->contract444(&Y2, &T2, &Z, 0, 0, 1, 0);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->contract444(&Z, &I, &Z_final, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&Z);
+
+   
+    global_dpd_->buf4_axpy(&Z_final, &Y2new, 0.5);
+   
+    global_dpd_->buf4_close(&Z_final);
+
+//########################END TEST##############################################
+
 
     if (params.local)
         local_filter_T2(&Y2new);

@@ -81,13 +81,15 @@ void G_build(const char *pert, int irrep, double omega);
 double converged_Y(const char *pert, int irrep, double omega);
 void diis_Y(int iter, const char *pert, int irrep, double omega);
 
+void lambda_residuals();
+
 void compute_Y(const char *pert, int irrep, double omega) {
     int i, iter = 0, done = 0;
     double rms, polar, X2_norm;
     char lbl[32];
     //----------------
-    dpdfile2 X1, Y1;
-    dpdbuf4 z2, X2, Y2;
+    dpdfile2 X1, Y1, L1, GMI, GAE;
+    dpdbuf4 z2, X2, Y2, L2, WL;
     double Y1_norm,Y2_norm;
     dpdfile2 Y1new;  //Just for a test
     
@@ -97,6 +99,48 @@ void compute_Y(const char *pert, int irrep, double omega) {
     outfile->Printf("\n\tComputing Y amplitudes %s-Perturbed Wave Function (%5.3f E_h).\n", pert, omega);
     outfile->Printf("\tIter   Pseudopolarizability       RMS \n");
     outfile->Printf("\t----   --------------------   -----------\n");
+
+
+//#####################################################################
+/*
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
+
+    global_dpd_->file2_scm(&L1, 2);
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&L1);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\tNorm of L1.... %20.15f\n", Y1_norm);
+
+
+    global_dpd_->file2_close(&L1);
+
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
+    global_dpd_->buf4_scm(&L2, 2);
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->buf4_dot_self(&L2);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\tNorm of L2.... %20.15f\n", Y1_norm);
+
+    global_dpd_->buf4_close(&L2);
+*/
+
+/*
+    global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2");
+    global_dpd_->buf4_scm(&WL, 2); //I multiplied by 2
+    global_dpd_->buf4_close(&WL);
+
+    global_dpd_->file2_init(&GAE, PSIF_CC_LAMBDA, 0, 1, 1, "GAE");
+    global_dpd_->file2_scm(&GAE, 2); //I multiplied by 2
+    global_dpd_->file2_close(&GAE);
+
+    global_dpd_->file2_init(&GMI, PSIF_CC_LAMBDA, 0, 0, 0, "GMI");
+    global_dpd_->file2_scm(&GMI, 2); //I multiplied by 2
+    global_dpd_->file2_close(&GMI);
+
+*/
+//###################################################################
 
 
     //if (params.wfn == "CC2")
@@ -133,6 +177,7 @@ void compute_Y(const char *pert, int irrep, double omega) {
     Y2_norm = sqrt(Y2_norm);
     outfile->Printf("\tNorm of the guessed Y2 amplitudes %20.15f\n", Y2_norm); 
 
+    lambda_residuals();
 
     polar = -2.0 * pseudopolar_Y(pert, irrep, omega);
     outfile->Printf("\t%4d   %20.12f\n", iter, polar);
