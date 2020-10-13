@@ -47,8 +47,8 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
 		      const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 X1, Y1, F, z, z1, Z_final;
-    dpdbuf4 W, Z, Z2, Y2 ; 
+    dpdfile2 X1, Y1, F, z, z1, Z_final, t1;
+    dpdbuf4 W, Z, Z2, Y2, Z1, T2; 
     char lbl[32];
     int i, j, a, b, ab, ij;
     int Gej, Gab, Gij, Gi, Gj, Ga, Gb, Ge;
@@ -183,8 +183,8 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
                       const char *pert_z, int irrep_z, double omega_z) {
 
     double result = 0.0;
-    dpdfile2 X1, Y1, GAE, GMI, z_ij, z_ia, z2_ia,F, FX, z, z1, Z_final;
-    dpdbuf4 D, tIjAb, W, Z, Z2, Y2 ;
+    dpdfile2 X1, Y1, GAE, GMI, z_ij, z_ia, z2_ia,F, FX, z, z1, Z_final, t1;
+    dpdbuf4 D, tIjAb, W, Z, Z2, Y2, Z1, T2, I, Zfinal ;
     char lbl[32];
     int i, j, a, b, ab, ij;
     int Gej, Gab, Gij, Gi, Gj, Ga, Gb, Ge;
@@ -242,6 +242,82 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_close(&Z2);
 
 
+    //tmp  += 0.5*np.einsum('fabc,jkfa->jckb',self.Hvvvv,self.y2_A)
+    //tmp  += 0.5*np.einsum('facb,kjfa->jckb',self.Hvvvv,self.y2_A)
+
+    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
+
+    global_dpd_->buf4_scm(&Zfinal, 0);
+
+    sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
+
+    sprintf(lbl, "Z(Ab,Ij) %s", pert_x);
+    global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, irrep_x, 5, 0, 5, 0, 0, lbl);
+    global_dpd_->buf4_init(&I, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
+    global_dpd_->contract444(&I, &Y2, &Z1, 0, 0, 1, 0);
+    global_dpd_->buf4_close(&I);
+
+
+    global_dpd_->buf4_close(&Zfinal); // Need to close X2new to avoid collisions /
+    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_LR, rspq, 0, 5, lbl, 1);
+    global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl); // re-open X2new here /
+    global_dpd_->buf4_close(&Z1);
+
+    sprintf(lbl, "Z(Ij,am) %s", pert_x);
+    global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, irrep_x, 0, 11, 0, 11, 0, lbl);
+    global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->contract424(&Y2, &t1, &Z1, 3, 1, 0, 1, 0);
+    global_dpd_->file2_close(&t1);
+
+    sprintf(lbl, "Z(Ij,Ab) %s", pert_x);
+    global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, irrep_x, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&I, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
+    global_dpd_->contract444(&Z1, &I, &Z2, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&Z1);
+
+    global_dpd_->buf4_axpy(&Z2, &Zfinal, -1);
+
+
+    global_dpd_->buf4_close(&Zfinal); // Need to close X2new to avoid collisions //
+    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_sort_axpy(&Z2, PSIF_CC_LR, qpsr, 0, 5, lbl, -1);
+    global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl); //// re-open X2new here
+    global_dpd_->buf4_close(&Z2);
+
+
+    sprintf(lbl, "Z(Ij,Mn) %s", pert_x);
+    global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, irrep_x, 0, 0, 0, 0, 0, lbl);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+    global_dpd_->contract444(&Y2, &T2, &Z2, 0, 0, 1, 0);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->contract444(&Z2, &I, &Zfinal, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&Z2);
+
+
+    sprintf(lbl, "HvvvvY2 (ia,jb) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_sort(&Zfinal, PSIF_CC_LR, psqr, 10, 10, lbl);
+    sprintf(lbl, "HvvvvY2 (ja,ib) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_sort(&Zfinal, PSIF_CC_LR, qrps, 10, 10, lbl);
+    global_dpd_->buf4_close(&Zfinal);
+
+    sprintf(lbl, "HvvvvY2 (ia,jb) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, 0, 10, 10, 10, 10, 0, lbl);
+    global_dpd_->buf4_axpy(&Zfinal, &Z, -0.5); 
+    global_dpd_->buf4_close(&Zfinal);     
+
+
+    sprintf(lbl, "HvvvvY2 (ja,ib) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, 0, 10, 10, 10, 10, 0, lbl);
+    global_dpd_->buf4_axpy(&Zfinal, &Z, -0.5); 
+    global_dpd_->buf4_close(&Zfinal);
+
+
     global_dpd_->file2_init(&z_ia, PSIF_CC_OEI, 0, 0, 1, "z2_ia");
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
@@ -259,7 +335,6 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->file2_close(&z_ia);
     global_dpd_->file2_close(&X1);
 
-//Here
 
 
     global_dpd_->file2_init(&z_ia, PSIF_CC_OEI, 0, 0, 1, "z_ia");
