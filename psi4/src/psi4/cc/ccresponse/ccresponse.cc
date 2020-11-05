@@ -74,10 +74,10 @@ void lambda_2();
 void local_init();
 void local_done();
 
-void polar();
+void polar(std::shared_ptr<Wavefunction> ref_wfn);
 void hyper();
-void optrot(std::shared_ptr<Molecule> molecule);
-void roa();
+void optrot(std::shared_ptr<Wavefunction> ref_wfn);
+void roa(std::shared_ptr<Wavefunction> ref_wfn);
 
 void preppert(std::shared_ptr<BasisSet> primary);
 
@@ -128,13 +128,13 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
 
     preppert(ref_wfn->basisset());
 
-    if (params.prop == "POLARIZABILITY") polar();
+    if (params.prop == "POLARIZABILITY") polar(ref_wfn);
     if (params.prop == "HYPERPOLARIZABILITY") {
        lambda_2();
-       hyper();	
+       hyper();
        }
-    if (params.prop == "ROTATION") optrot(ref_wfn->molecule());
-    if (params.prop == "ROA_TENSOR") roa();
+    if (params.prop == "ROTATION") optrot(ref_wfn);
+    if (params.prop == "ROA_TENSOR") roa(ref_wfn);
 
     if (params.local) local_done();
 
