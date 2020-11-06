@@ -55,6 +55,10 @@ void export_fock(py::module &m) {
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux, bool do_wK, size_t doubles) {
                         return JK::build_JK(basis, aux, Process::environment.options, do_wK, doubles);
                     })
+        .def_static("build_JK",
+                    [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux, std::shared_ptr<BasisSet> one_basis, std::shared_ptr<BasisSet> two_basis) {
+                        return JK::build_JK(basis, aux, one_basis, two_basis, Process::environment.options);
+                    })
         .def("name", &JK::name)
         .def("memory_estimate", &JK::memory_estimate)
         .def("initialize", &JK::initialize)
@@ -66,14 +70,7 @@ void export_fock(py::module &m) {
         .def("set_do_J", &JK::set_do_J)
         .def("set_do_K", &JK::set_do_K)
         .def("set_do_wK", &JK::set_do_wK)
-        .def("set_omega", &JK::set_omega, "Dampening term for range separated DFT", "omega"_a)
-        .def("get_omega", &JK::get_omega, "Dampening term for range separated DFT")
-        .def("set_wcombine", &JK::set_wcombine, "Are Exchange terms in one Matrix", "wcombine"_a )
-        .def("get_wcombine", &JK::get_wcombine, "Are Exchange terms in one Matrix", "wcombine")
-        .def("set_omega_alpha", &JK::set_omega_alpha, "Weight for HF exchange term in range-separated DFT", "alpha"_a)
-        .def("get_omega_alpha", &JK::get_omega_alpha, "Weight for HF exchange term in range-separated DFT")
-        .def("set_omega_beta", &JK::set_omega_beta, "Weight for dampened exchange term in range-separated DFT", "beta"_a)
-        .def("get_omega_beta", &JK::get_omega_beta, "Weight for dampened exchange term in range-separated DFT")
+        .def("set_omega", &JK::set_omega)
         .def("compute", &JK::compute)
         .def("finalize", &JK::finalize)
         .def("C_clear",
@@ -96,6 +93,17 @@ void export_fock(py::module &m) {
 
     py::class_<MemDFJK, std::shared_ptr<MemDFJK>, JK>(m, "MemDFJK", "docstring")
         .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
+
+    py::class_<Mem_2B_DFJK, std::shared_ptr<Mem_2B_DFJK>, JK>(m, "Mem_2B_DFJK", "docstring")
+        .def("J_oo_ao", &Mem_2B_DFJK::J_oo_ao, py::return_value_policy::reference_internal)
+        .def("K_oo_ao", &Mem_2B_DFJK::K_oo_ao, py::return_value_policy::reference_internal)
+        .def("J_ot_ao", &Mem_2B_DFJK::J_ot_ao, py::return_value_policy::reference_internal)
+        .def("K_ot_ao", &Mem_2B_DFJK::K_ot_ao, py::return_value_policy::reference_internal)
+        .def("set_do_JK_oo", &Mem_2B_DFJK::set_do_JK_oo)
+        .def("set_do_JK_ot", &Mem_2B_DFJK::set_do_JK_ot)
+        .def("set_do_JK_tt", &Mem_2B_DFJK::set_do_JK_tt)
+        .def("compute_2B_JK", &Mem_2B_DFJK::compute_2B_JK)
+        .def("dfh", &Mem_2B_DFJK::dfh, "Return the DFHelper object.");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
@@ -184,6 +192,8 @@ void export_fock(py::module &m) {
         .def("get_tensor_shape", &DFHelper::get_tensor_shape)
         .def("get_tensor", take_string(&DFHelper::get_tensor))
         .def("get_tensor", tensor_access3(&DFHelper::get_tensor));
+
+    py::class_<DFHelper_2B, std::shared_ptr<DFHelper_2B>, DFHelper>(m, "DFHelper_2B", "docstring");
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",

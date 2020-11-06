@@ -66,7 +66,6 @@ void _set_dfjk_options(T* jk, Options& options) {
     if (options["DF_INTS_NUM_THREADS"].has_changed())
         jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 }
-
 JK::JK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
 JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
@@ -103,9 +102,12 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     } else if (jk_type == "MEM_DF") {
         MemDFJK* jk = new MemDFJK(primary, auxiliary);
-        jk->set_wcombine(true);
         _set_dfjk_options<MemDFJK>(jk, options);
-        if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
+
+        return std::shared_ptr<JK>(jk);
+    } else if (jk_type == "MEM_2B_DF") {
+        Mem_2B_DFJK* jk = new Mem_2B_DFJK(primary, auxiliary);
+        _set_dfjk_options<Mem_2B_DFJK>(jk, options);
 
         return std::shared_ptr<JK>(jk);
     } else if (jk_type == "PK") {
@@ -151,6 +153,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options) {
     // if SCF_TYPE == DF, you are using the wrong constructor and get an error next constructor in
+    printf("first build_JK function\n");
     return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
 }
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
@@ -182,6 +185,20 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     // instead, I will let the already existing sets do their job
     // this requires do_wK and doubles to be passed here and set
 }
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> one_basis, std::shared_ptr<BasisSet> two_basis,
+                                 Options& options) {
+    // if SCF_TYPE == DF, you are using the wrong constructor and get an error next constructor in
+    printf("correct first build_JK\n");
+    return build_JK(primary, auxiliary, one_basis, two_basis, options, options.get_str("SCF_TYPE"));
+}
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> one_basis, std::shared_ptr<BasisSet> two_basis,
+                                 Options& options, std::string jk_type) {
+    printf("running the correct build_JK\n");
+    Mem_2B_DFJK* jk = new Mem_2B_DFJK(primary, auxiliary, one_basis, two_basis);
+    _set_dfjk_options<Mem_2B_DFJK>(jk, options);
+                                                           
+    return std::shared_ptr<JK>(jk);
+}
 SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
 }
@@ -202,11 +219,8 @@ void JK::common_init() {
     do_J_ = true;
     do_K_ = true;
     do_wK_ = false;
-    wcombine_ = false;
     lr_symmetric_ = false;
     omega_ = 0.0;
-    omega_alpha_ = 1.0;
-    omega_beta_ = 0.0;
 
     std::shared_ptr<IntegralFactory> integral =
         std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
@@ -621,12 +635,6 @@ void JK::compute() {
 
     if (lr_symmetric_) {
         C_right_.clear();
-    }
-}
-void JK::set_wcombine(bool wcombine) {
-    wcombine_ = wcombine;
-    if (wcombine) {
-        throw PSIEXCEPTION("To combine exchange terms, use MemDFJK\n");
     }
 }
 void JK::finalize() { postiterations(); }
