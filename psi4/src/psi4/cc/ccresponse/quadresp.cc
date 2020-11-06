@@ -41,6 +41,8 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
+#include <time.h>
+
 
 namespace psi {
 namespace ccresponse {

@@ -70,6 +70,8 @@ void cc2_hbar_extra();
 void sort_lamps();
 void lambda_residuals();
 void lambda_2();
+void sort_lamps_quadratic_resp();
+void sort_integrals_quadratic_resp();
 
 void local_init();
 void local_done();
@@ -131,6 +133,8 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     if (params.prop == "POLARIZABILITY") polar();
     if (params.prop == "HYPERPOLARIZABILITY") {
        lambda_2();
+       sort_lamps_quadratic_resp();
+       sort_integrals_quadratic_resp();
        hyper();	
        }
     if (params.prop == "ROTATION") optrot(ref_wfn->molecule());

@@ -94,7 +94,7 @@ void compute_Y(const char *pert, int irrep, double omega) {
     dpdfile2 Y1new;  //Just for a test
     
 
-    timer_on("compute_X");
+    timer_on("compute_Y");
 
     outfile->Printf("\n\tComputing Y amplitudes %s-Perturbed Wave Function (%5.3f E_h).\n", pert, omega);
     outfile->Printf("\tIter   Pseudopolarizability       RMS \n");
@@ -183,8 +183,12 @@ void compute_Y(const char *pert, int irrep, double omega) {
     outfile->Printf("\t%4d   %20.12f\n", iter, polar);
 
 
+    timer_on("Y1 inhomo");
     Y1_inhomogenous_build(pert, irrep, omega);
+    timer_off("Y1 inhomo");
+    timer_on("Y2 inhomo"); 
     Y2_inhomogenous_build(pert, irrep, omega);
+    timer_off("Y2 inhomo");
 
 
     for (iter = 1; iter <= params.maxiter; iter++) {
@@ -298,7 +302,7 @@ void compute_Y(const char *pert, int irrep, double omega) {
 
     /*  print_X(pert, irrep, omega); */
 
-    timer_off("compute_X");
+    timer_off("compute_Y");
 }
 
 }  // namespace ccresponse

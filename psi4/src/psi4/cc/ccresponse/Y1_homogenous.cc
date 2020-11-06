@@ -78,7 +78,6 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     //L_irr = irrep;
     double Y1_norm, Y2_norm;
     double *Y;
-    dpdfile2 test;
 
     outfile->Printf("\tY1 Build...");
 
@@ -102,23 +101,23 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_init(&Y1new, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->file2_axpy(&Y1, &Y1new, omega, 0);
 
-    // L1 RHS += Yie*Fea
+    // Y1 RHS += Yie*Fea
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "FAE");
     global_dpd_->contract222(&Y1, &F, &Y1new, 0, 1, 1.0, 1.0);
     global_dpd_->file2_close(&F);
 
-    // L1 RHS += -Yma*Fim 
+    // Y1 RHS += -Yma*Fim 
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "FMI");
     global_dpd_->contract222(&F, &Y1, &Y1new, 0, 1, -1.0, 1.0);
     global_dpd_->file2_close(&F);
 
-    // L1 RHS += Yme*Wieam  
+    // Y1 RHS += Yme*Wieam  
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
     global_dpd_->contract422(&W, &Y1, &Y1new, 0, 0, 1.0, 1.0);
     global_dpd_->buf4_close(&W);
     global_dpd_->file2_close(&Y1);
 
-    // L1 RHS += 1/2 Yimef*Wefam 
+    // Y1 RHS += 1/2 Yimef*Wefam 
     // Y(i,a) += [ 2 Y(im,ef) - Y(im,fe) ] * W(am,ef) 
     // Note: W(am,ef) is really Wabei (ei,ab) //
     //sprintf(lbl, "Y_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
@@ -174,7 +173,7 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&Y2);
     global_dpd_->buf4_close(&WMbIj);
 
-    //L1 RHS += -Gef*Weifa //
+    //Y1 RHS += -Gef*Weifa //
     //sprintf(lbl, "G_%s_AE (%5.3f)", pert, omega);
     //global_dpd_->file2_init(&GAE, PSIF_CC_OEI, irrep, 1, 1, lbl);
     //global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); 
@@ -237,27 +236,15 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&WmNiE);
     global_dpd_->file2_close(&GMI);
 
-/*
-    Y1_norm = 0;
-    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
-    Y1_norm = sqrt(Y1_norm);
-    outfile->Printf("\n\tNorm of the Y1new BEFORE!!!.... %20.15f\n", Y1_norm);
-*/
 
     if (params.local && local.filter_singles)
         local_filter_T1(&Y1new);
     else
         denom1(&Y1new, omega);
-/*
-    Y1_norm = 0;
-    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
-    Y1_norm = sqrt(Y1_norm);
-    outfile->Printf("\n\tNorm of the Y1new AFTER!!!.... %20.15f\n", Y1_norm);
-*/
+
     global_dpd_->file2_close(&Y1new);
 
     return;
 }
 }  // namespace ccresponse
 }  // namespace psi
-
