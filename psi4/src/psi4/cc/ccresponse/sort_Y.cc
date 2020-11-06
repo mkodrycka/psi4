@@ -28,7 +28,10 @@
 
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here
+
+    Sorts Y amplitudes.
+    
+    Author: Monika Kodrycka
 */
 #include <cstdio>
 #include <cstring>

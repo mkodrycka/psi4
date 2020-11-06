@@ -28,8 +28,13 @@
 
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here
+
+    Computes CCSD Hyperpolarizability
+    Refer to eq. 107 of [Koch:1991:3333] for the general form of quadratic response functions.
+ 
+    Author: Monika Kodrycka      
 */
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -60,7 +65,6 @@ double YHXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y,
 void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irrep, double omega_x, 
              const char *pert_y, int y_irrep, double omega_y, const char *pert_z, int z_irrep, double omega_z) { 
     double hyper, hyper_YCX;
-    //double polar, polar_LCX, polar_HXY, polar_LHX1Y1, polar_LHX1Y2, polar_LHX2Y2;
 
     /* clear out scratch space */
     for (int j = PSIF_CC_TMP; j <= PSIF_CC_TMP11; j++) {
@@ -110,82 +114,8 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
         outfile->Printf("\n\tHyper Final.... %20.15f\n", hyper);	
     }
 
-     //hyper = hyper_YCX;
-
     *tensor =  hyper; 
-    //*tensor = A * hyper + B * (*tensor); 
 
-/*
-    polar_LCX = 0.0;
-    polar_HXY = 0.0;
-    polar_LHX1Y1 = 0.0;
-    polar_LHX2Y2 = 0.0;
-    polar_LHX1Y2 = 0.0;
-
-    if ((x_irrep ^ y_irrep) == 0) {
-        if (omega_y != 0.0) { // we assume omega_x = -omega_y 
-            timer_on("linear terms");
-            polar_LCX = LCX(pert_x, x_irrep, pert_y, y_irrep, omega_y);
-            polar_LCX += LCX(pert_y, y_irrep, pert_x, x_irrep, omega_x);
-            timer_off("linear terms");
-
-            if (!params.sekino && !params.linear) {
-                if (params.wfn == "CC2") {
-                    timer_on("quad terms");
-                    polar_HXY = HXY(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
-                    polar_LHX1Y1 = cc2_LHX1Y1(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
-                    polar_LHX1Y2 = cc2_LHX1Y2(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
-                    polar_LHX1Y2 += cc2_LHX1Y2(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x);
-                    timer_off("quad terms");
-                } else {
-                    timer_on("quad terms");
-                    polar_LHX1Y1 = LHX1Y1(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
-                    polar_LHX2Y2 = LHX2Y2(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
-                    polar_LHX1Y2 = LHX1Y2(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
-                    polar_LHX1Y2 += LHX1Y2(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x);
-                    timer_off("quad terms");
-                }
-            }
-        } else {
-            timer_on("linear terms");
-            polar_LCX = LCX(pert_x, x_irrep, pert_y, y_irrep, 0.0);
-            polar_LCX += LCX(pert_y, y_irrep, pert_x, x_irrep, 0.0);
-            timer_off("linear terms");
-            if (!params.sekino && !params.linear) {
-                if (params.wfn == "CC2") {
-                    timer_on("quad terms");
-                    polar_HXY = HXY(pert_x, x_irrep, 0.0, pert_y, y_irrep, 0.0);
-                    polar_LHX1Y1 = cc2_LHX1Y1(pert_x, x_irrep, 0.0, pert_y, y_irrep, 0.0);
-                    polar_LHX1Y2 = cc2_LHX1Y2(pert_x, x_irrep, 0.0, pert_y, y_irrep, 0.0);
-                    polar_LHX1Y2 += cc2_LHX1Y2(pert_y, y_irrep, 0.0, pert_x, x_irrep, 0.0);
-                    timer_off("quad terms");
-                } else {
-                    timer_on("quad terms");
-                    polar_LHX1Y1 = LHX1Y1(pert_x, x_irrep, 0.0, pert_y, y_irrep, 0.0);
-                    polar_LHX2Y2 = LHX2Y2(pert_x, x_irrep, 0.0, pert_y, y_irrep, 0.0);
-                    polar_LHX1Y2 = LHX1Y2(pert_x, x_irrep, 0.0, pert_y, y_irrep, 0.0);
-                    polar_LHX1Y2 += LHX1Y2(pert_y, y_irrep, 0.0, pert_x, x_irrep, 0.0);
-                    timer_off("quad terms");
-                }
-            }
-        }
-
-        if (params.sekino || params.linear) / only linear term needed in Sekino-Bartlett model III 
-            polar = polar_LCX;
-        else
-            polar = polar_LCX + polar_HXY + polar_LHX1Y1 + polar_LHX2Y2 + polar_LHX1Y2;
-
-        if (params.print & 2) {
-            outfile->Printf("\n\tLinresp tensor <<%s;%s>>\n", pert_x, pert_y);
-            outfile->Printf("\tpolar_LCX    = %20.12f\n", polar_LCX);
-            if (params.wfn == "CC2") outfile->Printf("\tpolar_HXY    = %20.12f\n", polar_HXY);
-            outfile->Printf("\tpolar_LHX1Y1 = %20.12f\n", polar_LHX1Y1);
-            outfile->Printf("\tpolar_LHX1Y2 = %20.12f\n", polar_LHX1Y2);
-            outfile->Printf("\tpolar_LHX2Y2 = %20.12f\n", polar_LHX2Y2);
-        }
-
-        *tensor = A * polar + B * (*tensor);
-    }*/
 }
 
 }  // namespace ccresponse

@@ -28,8 +28,12 @@
 
 /*! \file
     \ingroup CCRESPONSE
-    \brief Enter brief description of file here
+
+   Computes homogenous terms appearing in Y1 equations.
+   
+   Author: Monika Kodrycka  
 */
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -52,35 +56,19 @@ void denom1(dpdfile2 *X1, double omega);
 void local_filter_T1(dpdfile2 *T1);
 
 void Y1_homogenous_build(const char *pert, int irrep, double omega) {
-    dpdfile2 newYIA, newYia, YIA, Yia;
-    dpdfile2 dIA, dia, Fme, FME;
-    dpdfile2 YFaet2, YFAEt2, YFmit2, YFMIt2;
     dpdfile2 GMI, Gmi, Gae, XIA, Xia;
     dpdfile2 GAE;
-    dpdbuf4 WMBEJ, Wmbej, WMbEj, WmBeJ;
-    dpdbuf4 WMBIJ, Wmbij, WMbIj, WmBiJ;
-    dpdbuf4 YIJAB, Yijab, YIjAb, YiJaB, Y2;
-    dpdbuf4 WMNIE, Wmnie, WMnIe, WmNiE;
-    dpdbuf4 WAMEF, Wamef, WAmEf, WaMeF; //W;
     dpdbuf4 Z;
-    dpdfile2 YLD;
     int Gim, Gi, Gm, Ga, Gam, nrows, ncols, A, a, am;
     int Gei, ei, e, i, Gef, Ge, Gf, E, I, af, fa, f;
     double *X;
-
-   //Added
     dpdfile2 F, z1, z2;
-    dpdbuf4 W, WL ,D, X2, Z2, Z3, lx_iajb, X2test, L2test, LIjAb;
+    dpdbuf4 Y2, W, WL, D, X2, Z2, Z3, lx_iajb;
     dpdfile2 Y1, Y1new, mu1, L1, lt, lx, lx_AB, X1, Y1inhomo;
     dpdbuf4 L2, mu2, Hx_ijab, lx_ijab;
     char lbl[32];
-    //int L_irr;
-    //L_irr = irrep;
     double Y1_norm, Y2_norm;
     double *Y;
-
-    outfile->Printf("\tY1 Build...");
-
 
     // Homogenous terms
     sprintf(lbl, "New Y_%s_IA (%5.3f)", pert, omega);
@@ -168,10 +156,10 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     //sprintf(lbl, "Y_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
     sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-    global_dpd_->buf4_init(&WMbIj, PSIF_CC_HBAR, 0, 10, 0, 10, 0, 0, "WMbIj");
-    global_dpd_->contract442(&WMbIj, &Y2, &Y1new, 0, 2, -1.0, 1.0);
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 0, 10, 0, 0, "WMbIj");
+    global_dpd_->contract442(&W, &Y2, &Y1new, 0, 2, -1.0, 1.0);
     global_dpd_->buf4_close(&Y2);
-    global_dpd_->buf4_close(&WMbIj);
+    global_dpd_->buf4_close(&W);
 
     //Y1 RHS += -Gef*Weifa //
     //sprintf(lbl, "G_%s_AE (%5.3f)", pert, omega);
@@ -231,9 +219,9 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     // Y1 RHS += -Gmn*Wmina 
     sprintf(lbl, "G_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep, 0, 0, lbl);
-    global_dpd_->buf4_init(&WmNiE, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
-    global_dpd_->dot14(&GMI, &WmNiE, &Y1new, 0, 0, -1.0, 1.0);
-    global_dpd_->buf4_close(&WmNiE);
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
+    global_dpd_->dot14(&GMI, &W, &Y1new, 0, 0, -1.0, 1.0);
+    global_dpd_->buf4_close(&W);
     global_dpd_->file2_close(&GMI);
 
 

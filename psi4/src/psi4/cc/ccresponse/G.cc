@@ -27,9 +27,12 @@
  */
 
 /*! \file
-    \ingroup CCRESPONSE
-    \brief Enter brief description of file here
+     Intermediates to avoid construction of 3 body Hbar terms
+     in solving Y amplitude equations (just like in lambda equations).
+
+     Author: Monika Kodrycka
 */
+
 #include <cstdio>
 #include <cmath>
 #include "psi4/libdpd/dpd.h"

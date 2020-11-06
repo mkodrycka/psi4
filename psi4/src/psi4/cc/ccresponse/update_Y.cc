@@ -28,8 +28,12 @@
 
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here
+
+    Updates Y amplitudes.
+
+    Author: Monika Kodrycka
 */
+
 #include <cstdio>
 #include <cstring>
 #include "psi4/libdpd/dpd.h"
