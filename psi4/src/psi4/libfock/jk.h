@@ -254,17 +254,8 @@ class PSI_API JK {
     /// Do wK matrices? Defaults to false
     bool do_wK_;
 
-    /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
-    bool wcombine_;
-
     /// Omega, defaults to 0.0
     double omega_;
-
-    /// omega alpha, defaults to 1.0
-    double omega_alpha_;
-
-    /// omega beta , defaults to 0.0
-    double omega_beta_;
 
     /// Left-right symmetric? Determined in each call of compute()
     bool lr_symmetric_;
@@ -286,8 +277,9 @@ class PSI_API JK {
 
     // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
 
-    /// Primary basis set
-    std::shared_ptr<BasisSet> primary_;
+    /// Primary basis set 
+    std::shared_ptr<BasisSet> primary_; 
+
     /// AO2USO transformation matrix
     SharedMatrix AO2USO_;
     /// Pseudo-occupied C matrices, left side
@@ -374,6 +366,12 @@ class PSI_API JK {
                                         Options& options, std::string jk_type);
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                         Options& options, bool do_wK, size_t doubles);
+    /* returns the asymmetric JK object */
+    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> one_basis, std::shared_ptr<BasisSet> two_basis,
+                                    Options& options);
+
+    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> one_basis, std::shared_ptr<BasisSet> two_basis,
+                                        Options& options, std::string jk_type);
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const = 0;
@@ -439,35 +437,11 @@ class PSI_API JK {
     *        defaults to false
     */
     virtual void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
-    bool get_do_wK() {return do_wK_;}
-    /**
-    * Set to combine wK integral tensors
-    * @param wcombine do we combine wK matrices?
-    *        defaults to false unless MemDFJK
-    */
-    virtual void set_wcombine(bool wcombine);
-    bool get_wcombine() { return wcombine_; }
-
     /**
     * Set the omega value for wK
     * @param omega range-separation parameter
     */
     void set_omega(double omega) { omega_ = omega; }
-    double get_omega() { return omega_; }
-
-    /**
-    * Set the alpha value for w exchange: weight for HF Term                
-    * @param omega_alpha HF-Exchange weight
-    */
-    virtual void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
-    double get_omega_alpha() {return omega_alpha_; }
-
-    /**
-    * Set the alpha value for w exchange: weight for dampened Term                
-    * @param omega_beta Dampened Exchange weight
-    */
-    virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
-    double get_omega_beta() { return omega_beta_; }
 
     // => Computers <= //
 
@@ -557,6 +531,12 @@ class PSI_API JK {
      */
     const std::vector<SharedMatrix>& D() const { return D_; }
 
+/*    virtual const std::vector<SharedMatrix>& J_oo() const { return J_; }
+    virtual const std::vector<SharedMatrix>& K_oo() const { return K_; }
+    virtual const std::vector<SharedMatrix>& J_ot() const { return J_; }
+    virtual const std::vector<SharedMatrix>& K_ot() const { return K_; }
+    virtual const std::vector<SharedMatrix>& J_tt() const { return J_; }
+    virtual const std::vector<SharedMatrix>& K_tt() const { return K_; } */
     /**
     * Print header information regarding JK
     * type on output file
@@ -1023,7 +1003,6 @@ class PSI_API CDJK : public DiskDFJK {
  */
 class PSI_API MemDFJK : public JK {
    protected:
-
     // => DF-Specific stuff <= //
 
     std::string name() override { return "MemDFJK"; }
@@ -1098,14 +1077,162 @@ class PSI_API MemDFJK : public JK {
     */
     void print_header() const override;
 
-    void set_omega_alpha(double alpha) override;
-    void set_omega_beta(double beta) override;
-    void set_wcombine(bool wcombine) override;
-
     /**
      * Returns the DFHelper object
      */
     std::shared_ptr<DFHelper> dfh() { return dfh_; }
+};
+
+class PSI_API Mem_2B_DFJK: public JK{
+    protected:
+    /* Asymmetric JK machinery */
+    //void allocate_JK();
+
+    /// One basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+    /// One basis set
+    std::shared_ptr<BasisSet> one_basis_;
+    /// Two basis set
+    std::shared_ptr<BasisSet> two_basis_;
+
+    /* I need to know about the sizes of these basis sets! */
+    size_t nbf_;
+    size_t naux_;
+    size_t nob_;
+    size_t ntb_;
+
+
+    /* Information for Density Fitting */
+    std::string name() override {return "Mem_2B_DFJK";}
+    size_t memory_estimate() override;
+
+    /* This class wraps a DFHelper object
+     * dfh_ handles tensor construction, contraction
+     *    metric construction, basis set naming, sparsity,
+     *    and fills J and K Matrices.
+     *
+     * The user is responsible for stitching the resulting
+     * matrices together. */
+    std::shared_ptr<DFHelper> dfh_;
+
+    /* number of threads for DF integrals */
+    int df_ints_num_threads_;
+    /* Condition cutoff in fitting metric (deals with convergence) */
+    double condition_ = 1.0E-12;
+
+
+    /* general JK related methods and information
+     * wrappers to functions in the DFHelper object */
+
+    int max_nocc() const;
+    bool C1() const override { return true; }
+    /* Function to call generation of integral tensors, metrics, files, etc
+     * calls dfh_->initialize() and blocking functions */
+    void preiterations() override;
+    /* Compute needed J/K type objects */
+    void compute_JK() override;
+    /* Delete integrals, files, other pointers */
+    void postiterations() override;
+
+    void common_init();
+
+    void common_init(bool k);
+
+    bool do_JK_oo_;
+    bool do_JK_ot_;
+    bool do_JK_tt_;
+
+    std::vector<SharedMatrix> J_oo_;
+    std::vector<SharedMatrix> K_oo_;
+    std::vector<SharedMatrix> J_ot_;
+    std::vector<SharedMatrix> K_ot_;
+    std::vector<SharedMatrix> J_tt_;
+    std::vector<SharedMatrix> K_tt_;
+
+    std::vector<SharedMatrix> J_oo_ao_;
+    std::vector<SharedMatrix> K_oo_ao_;
+    std::vector<SharedMatrix> J_ot_ao_;
+    std::vector<SharedMatrix> K_ot_ao_;
+    std::vector<SharedMatrix> J_tt_ao_;
+    std::vector<SharedMatrix> K_tt_ao_;
+
+    void compute_D_2B();
+
+    public:
+    /* Constructor 
+     * @param primary This system's row (column) basis set
+     * @param secondary This system's columb (row) basis set
+     * @param auxiliary This system's auxiliary basis set 
+     */ 
+    Mem_2B_DFJK(std::shared_ptr<BasisSet> primary, 
+                std::shared_ptr<BasisSet> auxiliary);
+
+    Mem_2B_DFJK(std::shared_ptr<BasisSet> primary, 
+                std::shared_ptr<BasisSet> auxiliary,
+                std::shared_ptr<BasisSet> one_bas,
+                std::shared_ptr<BasisSet> two_bas);
+    /* Destructor */
+    ~Mem_2B_DFJK() override;
+
+    /* Knobs */
+
+    /*
+     * Minimum relative eigenvalue to retain in fitting inverse
+          * All eigenvectors with \epsilon_i < condition * \epsilon_max
+          * will be discarded
+          * @param condition minimum relative eigenvalue allowed,
+          *        defaults to 1.0E-12
+     */
+    void set_condition(double condition) { condition_ = condition; }
+
+    /*
+     * Number of threads for computing integrals
+     * @param t_readies a positive integer
+     */
+    void set_df_ints_num_threads(int t_readies) { df_ints_num_threads_ = t_readies; }
+
+    void set_do_JK_oo(bool v);// {do_JK_oo_=v; if (dfh_) {dfh_->set_do_JK_oo(v);}} 
+    bool get_do_JK_oo() {return do_JK_oo_;}
+
+    void set_do_JK_ot(bool v);// {do_JK_ot_=v; if (dfh_) {dfh_->set_do_JK_ot(v);}} 
+    bool get_do_JK_ot() {return do_JK_ot_;}
+
+    void set_do_JK_tt(bool v);// {do_JK_tt_=v; if (dfh_) {dfh_->set_do_JK_tt(v);}}
+    bool get_do_JK_tt() {return do_JK_tt_;}
+
+    const std::vector<SharedMatrix>& J_oo() const { return J_oo_; }
+    const std::vector<SharedMatrix>& K_oo() const { return K_oo_; }
+    const std::vector<SharedMatrix>& J_ot() const { return J_ot_; }
+    const std::vector<SharedMatrix>& K_ot() const { return K_ot_; }
+    const std::vector<SharedMatrix>& J_tt() const { return J_tt_; }
+    const std::vector<SharedMatrix>& K_tt() const { return K_tt_; }
+
+    const std::vector<SharedMatrix>& J_oo_ao() const { return J_oo_ao_; }
+    const std::vector<SharedMatrix>& K_oo_ao() const { return K_oo_ao_; }
+    const std::vector<SharedMatrix>& J_ot_ao() const { return J_ot_ao_; }
+    const std::vector<SharedMatrix>& K_ot_ao() const { return K_ot_ao_; }
+    const std::vector<SharedMatrix>& J_tt_ao() const { return J_tt_ao_; }
+    const std::vector<SharedMatrix>& K_tt_ao() const { return K_tt_ao_; }
+
+    /* TODO */
+    /* void set_do_wK(bool do_wK) override; */
+
+    /* Accessors */
+
+    /*
+     * Prints the header information regarding JK type to the output file
+     */
+     void print_header() const override;
+
+    /*
+     * Returns the DFHelper object
+     */
+    std::shared_ptr<DFHelper> dfh() { return dfh_; }
+
+    void set_do_wK(bool tf);// { do_wK_ = tf; dfh_->set_do_wK(tf); }
+    
+    void compute_2B_JK();
+
 };
 
 }
