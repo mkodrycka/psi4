@@ -46,7 +46,6 @@
 namespace psi {
 namespace ccresponse {
 
-
 double LHXXX_p1(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
 		      const char *pert_z, int irrep_z, double omega_z) {
 
@@ -114,7 +113,6 @@ double LHX1X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->buf4_sort(&XW, PSIF_CC_TMP0, rspq, 0, 0, lbl);
     global_dpd_->buf4_close(&XW);
 
-
     sprintf(lbl, "XL_%s (ij,al) (%5.3f)", pert_z, omega_z);    
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 11, 0, 11, 0, lbl);
 
@@ -143,7 +141,6 @@ double LHX1X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *
     
     return result; 
 }
-
 
 double LHX1X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
                       const char *pert_z, int irrep_z, double omega_z) {
@@ -194,7 +191,6 @@ double LHX1X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *
     return result;
 }
 
-
 double LHX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
                       const char *pert_z, int irrep_z, double omega_z) {
 
@@ -244,7 +240,6 @@ double LHX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *
 
     return result;
 }
-
 
 double LHX1X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
                       const char *pert_z, int irrep_z, double omega_z) {
@@ -376,7 +371,6 @@ double LHX2X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&l2);
 
-
     sprintf(lbl, "z_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&z, PSIF_CC_TMP0, irrep_y, 0, 1, "z_IA");
 
@@ -385,7 +379,6 @@ double LHX2X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract222(&X1, &xl_ab, &z, 0, 0, 1, 0);    
     global_dpd_->file2_close(&X1); 
     global_dpd_->file2_close(&xl_ab);	   
-
 
     sprintf(lbl, "dx_%s_IA (%5.3f)", pert_z, omega_z);
     global_dpd_->file2_init(&dx, PSIF_CC_OEI, irrep_z, 0, 1, "dx_IA");
@@ -403,7 +396,6 @@ double LHX2X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->file2_close(&dx);
 
     return result;
-
 }
 
 double LHX2X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
@@ -450,7 +442,6 @@ double LHX2X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *
 
     return result;
 }
-
 
 double LHX2X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
                       const char *pert_z, int irrep_z, double omega_z) {
@@ -716,7 +707,6 @@ double LHXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y
 
     hyper += LHX2X1X1_p7(pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y, pert_x, irrep_x, omega_x);
 
-
     /*** <L2(0)|[[[H_bar,X1(A)],X2(B)],X1(C)]|0> ***/
 
     hyper -= LHX2X1X1_p1(pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y);
@@ -738,7 +728,6 @@ double LHXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y
 
     hyper += LHX2X1X1_p7(pert_x, irrep_x, omega_x, pert_z, irrep_z, omega_z, pert_y, irrep_y, omega_y);
 
-
     /*** <L2(0)|[[[H_bar,X1(A)],X1(B)],X2(C)]|0> ***/
 
     hyper -= LHX2X1X1_p1(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
@@ -759,7 +748,6 @@ double LHXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y
     hyper += LHX2X1X1_p6(pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z, pert_x, irrep_x, omega_x);
 
     hyper += LHX2X1X1_p7(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
-
 
     return hyper;
 }

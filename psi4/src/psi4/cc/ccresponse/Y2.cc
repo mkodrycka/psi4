@@ -74,7 +74,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&Y2new, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); 
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
 
-
     // ****<O|L1(0)|A_bar|phi^ab_ij>****
 
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ij|ab)");
@@ -120,7 +119,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
 
     global_dpd_->buf4_axpy(&Z, &Y2new, 1);
 
- 
     // ****<O|L2(0)|A_bar|phi^ab_ij>****
 
     sprintf(lbl, "%sBAR_AE", pert);
@@ -257,7 +255,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_close(&L1);
 
     global_dpd_->buf4_axpy(&Z, &Y2new, 1);
-
 
     //****<O|L2(0)|[Hbar(0), X1]|phi^ab_ij>****
  
@@ -517,7 +514,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract244(&z, &L2, &Y2new, 1, 0, 0, -1, 1); 
     global_dpd_->file2_close(&z);
     global_dpd_->buf4_close(&L2);  
-
 
     // **** <O|L2(0)|[Hbar(0), X2]|phi^ab_ij> ****
 

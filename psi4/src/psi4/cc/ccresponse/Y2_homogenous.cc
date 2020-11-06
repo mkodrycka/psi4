@@ -239,7 +239,6 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
 
-
     if (params.abcd == "OLD") {
         sprintf(lbl, "Z(Ab,Ij) %s", pert);
         global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 5, 0, 5, 0, 0, lbl);
@@ -254,7 +253,6 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_sort_axpy(&Z, PSIF_CC_LR, rspq, 0, 5, lbl, 1);
         global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); /* re-open X2new here */
         global_dpd_->buf4_close(&Z);
-
 
     } else if (params.abcd == "NEW") {
         timer_on("ABCD:new");
@@ -402,13 +400,11 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
    
     global_dpd_->buf4_close(&Z_final);
 
-
     if (params.local)
         local_filter_T2(&Y2new);
     else
         denom2(&Y2new, omega);
     global_dpd_->buf4_close(&Y2new);
-
 }
 
 }  // namespace ccresponse

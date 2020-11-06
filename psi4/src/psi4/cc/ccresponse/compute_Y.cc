@@ -28,7 +28,11 @@
 
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here
+
+    Computes Y amplitudes.
+ 
+    Author: Monika Kodrycka 
+
 */
 #include <cstdio>
 #include <cstdlib>
@@ -121,7 +125,6 @@ void compute_Y(const char *pert, int irrep, double omega) {
     timer_on("Y2 inhomo"); 
     Y2_inhomogenous_build(pert, irrep, omega);
     timer_off("Y2 inhomo");
-
 
     for (iter = 1; iter <= params.maxiter; iter++) {
         if (params.wfn == "CC2") {

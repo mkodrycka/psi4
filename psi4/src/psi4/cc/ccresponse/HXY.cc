@@ -65,7 +65,6 @@ double HXY(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, 
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
     polar = 2.0 * global_dpd_->file2_dot(&X1, &z);
     global_dpd_->file2_close(&X1);
-
     global_dpd_->file2_close(&z);
 
     return polar;

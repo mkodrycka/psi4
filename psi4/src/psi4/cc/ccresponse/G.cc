@@ -55,15 +55,12 @@ void G_build(const char *pert, int irrep, double omega) {
 
         /* Y(Mj,Ab) * [ 2 Y(Ij,Ab) - Y(Ij,Ba) ] --> G(M,I) */
         global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-        //sprintf(lbl, "Y_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
         sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);
         global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
         global_dpd_->contract442(&tIjAb, &Y2, &GMI, 0, 0, 1, 0);
         global_dpd_->buf4_close(&tIjAb);
         global_dpd_->buf4_close(&Y2);
-
         global_dpd_->file2_close(&GMI);
-
 
         sprintf(lbl, "G_%s_AE (%5.3f)", pert, omega);
         global_dpd_->file2_init(&GAE, PSIF_CC_OEI, irrep, 1, 1, lbl);
@@ -76,7 +73,6 @@ void G_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_close(&tIjAb);
         global_dpd_->buf4_close(&Y2);
         global_dpd_->file2_close(&GAE);
-
 
     return;
 }

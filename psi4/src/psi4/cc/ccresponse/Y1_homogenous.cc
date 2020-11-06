@@ -48,7 +48,6 @@
 #define EXTERN
 #include "globals.h"
 
-
 namespace psi {
 namespace ccresponse {
 
@@ -151,7 +150,6 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_close(&Y2);
         global_dpd_->buf4_close(&W);
 
-
     // Y1 RHS += -1/2 Ymnae*Wiemn 
     //sprintf(lbl, "Y_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
     sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);
@@ -223,7 +221,6 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->dot14(&GMI, &W, &Y1new, 0, 0, -1.0, 1.0);
     global_dpd_->buf4_close(&W);
     global_dpd_->file2_close(&GMI);
-
 
     if (params.local && local.filter_singles)
         local_filter_T1(&Y1new);

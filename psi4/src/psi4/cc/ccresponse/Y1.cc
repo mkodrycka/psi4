@@ -48,7 +48,6 @@
 #define EXTERN
 #include "globals.h"
 
-
 namespace psi {
 namespace ccresponse {
 
@@ -65,7 +64,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     int num_j, num_i, num_e, nlinks;
     double *X;
     dpdfile2 F, z1, z2;
-    dpdbuf4 W, WL ,D, X2, Z2, Z3, lx_iajb, X2test, L2test, LIjAb; 
+    dpdbuf4 W, WL, D, X2, Z2, Z3, lx_iajb, X2test, L2test, LIjAb; 
     dpdfile2 Y1, Y1new, mu1, L1, lt, lx, lx_AB, X1;
     dpdbuf4 L2, Z, mu2, Hx_ijab, lx_ijab;
     char lbl[32];
@@ -73,11 +72,8 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     double *Y;
     dpdfile2 test;
 
-    //sprintf(lbl, "New Y_%s_IA (%5.3f)", pert, omega);
     sprintf(lbl, "Inhomo Y_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&Y1new, PSIF_CC_OEI, irrep, 0, 1, lbl);
-
-    // Inhomogenous terms
 
     /*** Mu * L1 ***/ 
     sprintf(lbl, "%s_IA", pert);
@@ -276,7 +272,6 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract222(&lx, &F, &Y1new, 0, 1, -1.0, 1.0);
     global_dpd_->file2_close(&lx);
     global_dpd_->file2_close(&F);  
-
 
     // Lijab * Xijab -> Lx_AB 
     global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 1, 1, "Lx_AB");

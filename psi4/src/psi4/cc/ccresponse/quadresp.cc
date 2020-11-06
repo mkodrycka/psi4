@@ -48,7 +48,6 @@
 #include "globals.h"
 #include <time.h>
 
-
 namespace psi {
 namespace ccresponse {
 
@@ -60,8 +59,6 @@ double LHXXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y
                      const char *pert_z, int irrep_z, double omega_z);
 double YHXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
                      const char *pert_z, int irrep_z, double omega_z);
-
-
 void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irrep, double omega_x, 
              const char *pert_y, int y_irrep, double omega_y, const char *pert_z, int z_irrep, double omega_z) { 
     double hyper, hyper_YCX;
@@ -104,9 +101,7 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
         hyper += LCXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
         hyper += LCXX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);	
         hyper += LCXX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);       
-
         hyper += LHXXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
-
         hyper += YHXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
         hyper += YHXX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);
         hyper += YHXX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
