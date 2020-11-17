@@ -61,4 +61,9 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/LCXX.cc 
     ${CMAKE_CURRENT_SOURCE_DIR}/LHXXX.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/YHXX.cc
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/linresp_with_Yampl.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/YC.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/polar_with_Yampl.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/LCX_with_Y.cc
 )

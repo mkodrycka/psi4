@@ -54,7 +54,7 @@ void sort_lamps() {
 void sort_lamps_quadratic_resp() {
     dpdbuf4 L;
 
-    //Sorted  L (ib|ja))
+    //Sorted  L (ib|ja)
     global_dpd_->buf4_init(&L, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     global_dpd_->buf4_sort(&L, PSIF_CC_LAMPS, psqr, 10, 10, "(2 LIjAb - LIjBa) (ib|ja)");
     global_dpd_->buf4_sort(&L, PSIF_CC_LAMPS, prqs, 10, 10, "(2 LIjAb - LIjBa) (ia|jb)");
@@ -73,10 +73,22 @@ void sort_integrals_quadratic_resp() {
     global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 0, 5, "D (ij|ba)");
     global_dpd_->buf4_close(&D);
 
-
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
     global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, qprs, 0, 11, "2WMnIe - WnMIe (nM,eI)");   //sort
     global_dpd_->buf4_close(&W);
+
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
+    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, psqr, 0, 10, "2WMnIe - WnMIe (MI,nE)");
+    global_dpd_->buf4_close(&W);
+
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 10, 0, 10, 0, "WMnIe");
+    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, psrq, 10, 0, "WMnIe (Me,nI)");  //Can we replace?
+    global_dpd_->buf4_close(&W);
+
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 10, 0, 10, 0, "WMnIe");
+    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, sqrp, 11, 0, "WMnIe (en,IM)");  //Can we replace?
+    global_dpd_->buf4_close(&W);
+
 
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
     global_dpd_->buf4_scmcopy(&W, PSIF_CC_HBAR, "WAmEf 2(Am,Ef) - (Am,fE)", 2);
@@ -94,6 +106,9 @@ void sort_integrals_quadratic_resp() {
     global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, psrq, 10, 10, "WMebJ");
     global_dpd_->buf4_close(&W);
 
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 11, 10, 11, 0, "WMbEj");
+    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, prqs, 10, 11, "WMEbj");
+    global_dpd_->buf4_close(&W);
 
     //Build Hvvvv x L2 
     global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2");

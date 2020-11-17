@@ -76,7 +76,8 @@ void sort_integrals_quadratic_resp();
 void local_init();
 void local_done();
 
-void polar();
+//void polar();
+void polar_with_Yampl();
 void hyper();
 void optrot(std::shared_ptr<Molecule> molecule);
 void roa();
@@ -130,7 +131,14 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
 
     preppert(ref_wfn->basisset());
 
-    if (params.prop == "POLARIZABILITY") polar();
+    //if (params.prop == "POLARIZABILITY") polar_with_Yampl(); //polar();
+    if (params.prop == "POLARIZABILITY") {
+       lambda_2();
+       sort_lamps_quadratic_resp();
+       sort_integrals_quadratic_resp();
+       polar_with_Yampl();
+       } 
+
     if (params.prop == "HYPERPOLARIZABILITY") {
        lambda_2();
        sort_lamps_quadratic_resp();

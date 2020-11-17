@@ -92,6 +92,7 @@ void hyper() {
 
      }
 
+/*
             outfile->Printf("\n\tComputing %s tensor.\n", lbl);
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
@@ -114,6 +115,7 @@ void hyper() {
                     } 
                 }
             }
+*/
 
             //psio_write_entry(PSIF_CC_INFO, lbl, (char *)tensor[i][0], 27 * sizeof(double));
 

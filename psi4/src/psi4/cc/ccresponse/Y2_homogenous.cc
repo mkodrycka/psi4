@@ -158,9 +158,9 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
 
     // r_y2 += ndot('ieam,mjeb->ijab', self.Hovvo, self.y2, prefactor=2.0)
     //sort
-    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 11, 10, 11, 0, "WMbEj");
-    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, prqs, 10, 11, "WMEbj");
-    global_dpd_->buf4_close(&W);
+    //global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 11, 10, 11, 0, "WMbEj");
+    //global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, prqs, 10, 11, "WMEbj");
+    //global_dpd_->buf4_close(&W);
 
     global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "Z (ia|jb)");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 11, 10, 11, 0, "WMbEj");
@@ -286,7 +286,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&Z);
 */
 
- //   if (params.abcd == "OLD") {
+    if (params.abcd == "OLD") {
         sprintf(lbl, "Z(Ab,Ij) %s", pert);
         global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 5, 0, 5, 0, 0, lbl);
         global_dpd_->buf4_init(&I, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
@@ -300,7 +300,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_sort_axpy(&Z, PSIF_CC_LR, rspq, 0, 5, lbl, 1);
         global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); /* re-open X2new here */
         global_dpd_->buf4_close(&Z);
-/*
+
 
     } else if (params.abcd == "NEW") {
         timer_on("ABCD:new");
@@ -414,7 +414,6 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
 
         timer_off("ABCD:new");
     }
-*/
 
 
     sprintf(lbl, "Z(Ij,am) %s", pert);

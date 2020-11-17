@@ -181,8 +181,8 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, qpsr, 0, 5, "Z (ji,ba)");
     global_dpd_->buf4_close(&Z);
 
-global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ij,ab)");   //Revisit it!
-global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ji,ba)");  //Revisit it!
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ij,ab)");   //Revisit it!
+    global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ji,ba)");  //Revisit it!
 
     global_dpd_->buf4_axpy(&Z2, &Z, 1);
 
@@ -233,7 +233,6 @@ global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ji,ba)");  /
 
 //Here Compute out of core!!!!!!!!
 
-outfile->Printf("\n MK");
 
     //REVISIT THIS PART!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //tmp += ndot('fmae,if->miae', self.Hvovv, self.l1, prefactor=2.0)
@@ -597,14 +596,16 @@ outfile->Printf("\n MK");
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
-    global_dpd_->contract442(&X2, &L2, &lx, 2, 2, 1.0, 0.0);
+    //global_dpd_->contract442(&X2, &L2, &lx, 2, 2, 1.0, 0.0);
+    global_dpd_->contract442(&L2, &X2, &lx, 2, 2, 1.0, 0.0);
     global_dpd_->file2_close(&lx);
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&L2);
 
     global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 1, 1, "Lx_AB");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");	
-    global_dpd_->contract222(&F, &lx, &Y1new, 0, 1, -1.0, 1.0);   
+    //global_dpd_->contract222(&F, &lx, &Y1new, 0, 1, -1.0, 1.0);   
+    global_dpd_->contract222(&F, &lx, &Y1new, 0, 0, -1.0, 1.0);
     global_dpd_->file2_close(&lx);
     global_dpd_->file2_close(&F);
 
@@ -823,18 +824,14 @@ outfile->Printf("\n MK");
     global_dpd_->buf4_close(&W);
 
 
-    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); //Make it out of core
+    //global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); //Make it out of core
+    //global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 1, 1, "Lx_AB");
+    //global_dpd_->dot13(&lx, &W, &Y1new, 0, 0, 1.0, 1.0); 
+    //global_dpd_->buf4_close(&W);
+    //global_dpd_->file2_close(&lx);    
 
-    global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 1, 1, "Lx_AB");
-
-    global_dpd_->dot13(&lx, &W, &Y1new, 1, 0, 1.0, 1.0); 
-
-    global_dpd_->buf4_close(&W);
-    global_dpd_->file2_close(&lx);    
-
-//MK It is not working 
-
-/*        
+        /* Above code replaced to remove disk-space and memory bottlenecks */
+        global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 1, 1, "Lx_AB");
         global_dpd_->file2_mat_init(&lx);
         global_dpd_->file2_mat_rd(&lx);
         global_dpd_->file2_mat_init(&Y1new);
@@ -847,7 +844,7 @@ outfile->Printf("\n MK");
                 global_dpd_->buf4_mat_irrep_row_rd(&W, Gei, ei);
                 e = W.params->roworb[Gei][ei][0];
                 i = W.params->roworb[Gei][ei][1];
-                Ge = W.params->psym[i];
+                Ge = W.params->psym[e];
                 Gf = Ge ^ irrep;
                 Gi = Ge ^ Gei;
                 Ga = Gi ^ irrep;
@@ -877,8 +874,6 @@ outfile->Printf("\n MK");
         global_dpd_->file2_mat_close(&Y1new);
         global_dpd_->file2_mat_close(&lx);
         global_dpd_->file2_close(&lx);
-
-*/
 
   
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
