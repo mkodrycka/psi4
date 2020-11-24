@@ -125,7 +125,7 @@ void lambda_residuals() {
 
 
     global_dpd_->buf4_sort(&Z, PSIF_CC_LAMPS, psrq, 10, 10, "LHX1Y1 Residual II");
-    global_dpd_->buf4_sort(&Z, PSIF_CC_LAMPS, rqps, 10, 10, "LHX1Y1 Residual IItest");
+    //global_dpd_->buf4_sort(&Z, PSIF_CC_LAMPS, rqps, 10, 10, "LHX1Y1 Residual IItest");
     global_dpd_->buf4_close(&Z);
 }
 

@@ -36,6 +36,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
+#include <cmath>
 
 namespace psi {
 namespace ccresponse {
@@ -58,18 +59,18 @@ void sort_lamps_quadratic_resp() {
     global_dpd_->buf4_init(&L, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     global_dpd_->buf4_sort(&L, PSIF_CC_LAMPS, psqr, 10, 10, "(2 LIjAb - LIjBa) (ib|ja)");
     global_dpd_->buf4_sort(&L, PSIF_CC_LAMPS, prqs, 10, 10, "(2 LIjAb - LIjBa) (ia|jb)");
-    global_dpd_->buf4_sort(&L, PSIF_CC_LAMPS, qspr, 10, 10, "(2 LIjAb - LIjBa) (jb|ia)");
     global_dpd_->buf4_close(&L);
 }
 
 
 void sort_integrals_quadratic_resp() {
-    dpdbuf4 D, W, WL;
+    dpdbuf4 L2, D, W, WL;
     dpdfile2 L1;
+    double Y2_norm;
 
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
     global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 10, 10, "D (ia|jb)");
-    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, qrps, 10, 10, "D (ja|ib)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, psqr, 10, 10, "D (ib|ja)");
     global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 0, 5, "D (ij|ba)");
     global_dpd_->buf4_close(&D);
 
@@ -118,25 +119,54 @@ void sort_integrals_quadratic_resp() {
 
     //Sort
     global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ij,ab) - (ij,ba)");
-    global_dpd_->buf4_sort(&WL, PSIF_CC_LAMPS, pqsr, 0, 5, "WefabL2 2(ji,ab) - (ji,ba)");
+//    global_dpd_->buf4_sort(&WL, PSIF_CC_LAMPS, pqsr, 0, 5, "WefabL2 2(ji,ab) - (ji,ba)");
     //global_dpd_->buf4_close(&WL);
 
 
     //Sort WefabL2 2(ij,ab) - (ij,ba) ->WefabL2 2(ij,ba) - (ij,ab)
     //global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ij,ab) - (ij,ba)");
     global_dpd_->buf4_sort(&WL, PSIF_CC_LAMPS, pqsr, 0, 5, "WefabL2 2(ij,ba) - (ij,ab)");
-    global_dpd_->buf4_close(&WL);     
+    global_dpd_->buf4_close(&WL);   
+/*
+    //Sort
+    global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ij,ab) - (ij,ba)");
+    //global_dpd_->buf4_sort(&WL, PSIF_CC_LAMPS, pqsr, 0, 5, "WefabL2 2(ji,ab) - (ji,ba)");
+    //global_dpd_->buf4_close(&WL);
+    //global_dpd_->buf4_scmcopy(&WL, PSIF_CC_LAMPS, "WefabL2 (ij,ab) + WefabL2 (ij,ba)", 1);
+    global_dpd_->buf4_sort_axpy(&WL, PSIF_CC_HBAR, pqsr, 0, 5, "WefabL2 (ij,ab) + WefabL2 (ij,ba)", 2);
+    //global_dpd_->buf4_sort_axpy(&WL, PSIF_CC_HBAR, pqsr, 0, 5, "WefabL2 (ij,ab) + WefabL2 (ij,ba)", 1);
+    global_dpd_->buf4_close(&WL);
 
+    //Sort WefabL2 2(ij,ab) - (ij,ba) ->WefabL2 2(ij,ba) - (ij,ab)
+    //global_dpd_->buf4_sort(&WL, PSIF_CC_LAMPS, pqsr, 0, 5, "WefabL2 2(ij,ba) - (ij,ab)");
+    //global_dpd_->buf4_close(&WL);     
+*/
 
     //OPTIMIZE IT!
-    global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL_p1 (ij,ab)");
+    global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL(ij,ab) + WL(ji,ba)"); 
+    //global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL(ij,ab)");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 5, 10, 5, 0, "WAmEf 2(mA,Ef) - (mA,fE)");
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
     global_dpd_->contract424(&W, &L1, &WL, 1, 1, 1, 1, 0); 
+    global_dpd_->buf4_sort_axpy(&WL, PSIF_CC_HBAR, qpsr, 0, 5, "WL(ij,ab) + WL(ji,ba)", 1);
     global_dpd_->buf4_close(&WL);
     global_dpd_->file2_close(&L1);
 
 
+    // Type-II L2 residual 
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "LHX1Y1 Residual II");
+    global_dpd_->buf4_scmcopy(&L2, PSIF_CC_LAMPS, "LHX1Y1 (ia,jb) + (jb,ia) Residual II", 2);	
+    global_dpd_->buf4_sort_axpy(&L2, PSIF_CC_LAMPS, rspq, 10, 10, "LHX1Y1 (ia,jb) + (jb,ia) Residual II", 2);	
+    global_dpd_->buf4_close(&L2);
+
+
+    //global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL_p1 (ij,ab)");
+    //global_dpd_->buf4_sort_axpy(&WL, PSIF_CC_HBAR, qpsr, 0, 5, "WL_p1 (ij,ab)", 1);
+    //global_dpd_->buf4_sort_axpy(&WL, PSIF_CC_HBAR, qpsr, 0, 5, "WL(ij,ab) + WL(ji,ba)", 1);
+    //global_dpd_->buf4_close(&WL);
+
+
+    /*
     //OPTIMIZE IT
     global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL_p2 (ij,ab)");
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
@@ -144,7 +174,7 @@ void sort_integrals_quadratic_resp() {
     global_dpd_->contract244(&L1, &W, &WL, 1, 0, 0, 1, 1);
     global_dpd_->buf4_close(&WL);
     global_dpd_->file2_close(&L1);
-
+    */
 }
 
 }  // namespace ccresponse

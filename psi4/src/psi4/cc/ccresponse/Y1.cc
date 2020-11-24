@@ -318,19 +318,38 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
 
 */
 
-
+/*
     global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL_p1 (ij,ab)");
     global_dpd_->buf4_axpy(&WL, &Z, 1);
     global_dpd_->buf4_close(&WL);
-  
+
+    global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL_p1 (ij,ab)");
+    global_dpd_->buf4_sort(&WL, PSIF_CC_HBAR, qpsr, 0, 5, "WL_p1 (ji,ba)");
+    global_dpd_->buf4_close(&WL);
+
+    global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL_p1 (ji,ba)"); 
+    global_dpd_->buf4_axpy(&WL, &Z, 1);
+    global_dpd_->buf4_close(&WL);  
+*/
+
+    global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL(ij,ab) + WL(ji,ba)");
+    global_dpd_->buf4_axpy(&WL, &Z, 1);
+    global_dpd_->buf4_close(&WL);
+
     //global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z4 (ij,ab)");
     //global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE) (am,fe)");
     //global_dpd_->contract244(&L1, &W, &Z2, 1, 0, 0, 1, 1);
-   
+
+/*   
     global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL_p2 (ij,ab)");
     global_dpd_->buf4_axpy(&WL, &Z, 1);
     global_dpd_->buf4_close(&WL);    
- 
+*/
+
+//    global_dpd_->buf4_init(&WL, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WL(ij,ab) + WL(ij,ba)");
+//    global_dpd_->buf4_axpy(&WL, &Z, 1);
+//    global_dpd_->buf4_close(&WL); 
+
     global_dpd_->dot14(&X1, &Z, &Y1new, 0, 0, 1, 1);
 
     global_dpd_->file2_close(&X1);
@@ -356,7 +375,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     */
 
 
-//MK
+//MK //Move to lambda_sort
     //Sort WMnIj -> WnMIj
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
     global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, qprs, 0, 0, "WMnIj (nM,Ij)");
@@ -393,22 +412,15 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     */
 
     //global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ij,ab) - (ij,ba)");
-    global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ji,ab) - (ji,ba)"); 
-    global_dpd_->buf4_axpy(&WL, &Z, 0.5); //0.5
-    global_dpd_->buf4_close(&WL); 
+//    global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ji,ab) - (ji,ba)"); 
+//    global_dpd_->buf4_axpy(&WL, &Z, 0.5); //0.5
+//    global_dpd_->buf4_close(&WL); 
 
-
-    /* 
-    //Sort WefabL2 2(ij,ab) - (ij,ba) ->WefabL2 2(ij,ba) - (ij,ab)
-    global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ij,ab) - (ij,ba)");
-    global_dpd_->buf4_sort(&WL, PSIF_CC_LAMPS, pqsr, 0, 5, "WefabL2 2(ij,ba) - (ij,ab)"); 
-    global_dpd_->buf4_close(&WL);
-    */
 
     global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2 2(ij,ba) - (ij,ab)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
-    global_dpd_->buf4_axpy(&WL, &Z, 0.5); 
+    global_dpd_->buf4_axpy(&WL, &Z, 1.0); 
     global_dpd_->dot23(&X1, &Z, &Y1new, 0, 0, 1, 1);	
     global_dpd_->buf4_close(&WL);
     global_dpd_->file2_close(&X1);
@@ -518,18 +530,21 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
 */ 
 
     // Type-II L2 residual 
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "LHX1Y1 Residual II");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "LHX1Y1 (ia,jb) + (jb,ia) Residual II");
+    //global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "LHX1Y1 Residual II");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->contract422(&L2, &X1, &Y1new, 0, 0, -1, 1);  
     global_dpd_->buf4_close(&L2);
-
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "LHX1Y1 Residual IItest");
-    global_dpd_->contract422(&L2, &X1, &Y1new, 0, 0, -1, 1); 
     global_dpd_->file2_close(&X1);
+    
 
+//    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "Res test");
+//    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "LHX1Y1 Residual IItest");
+//    global_dpd_->contract422(&L2, &X1, &Y1new, 0, 0, -1, 1); 
+//    global_dpd_->file2_close(&X1);
 
-    //# <O|L1(0)|[Hbar(0), X2]|phi^a_i>
+    // <O|L1(0)|[Hbar(0), X2]|phi^a_i>
     sprintf(lbl, "Z_%s_ME", pert);
     global_dpd_->file2_init(&z1, PSIF_CC_TMP0, irrep, 0, 1, lbl);
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
@@ -540,11 +555,8 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);  
     sprintf(lbl, "Z2_%s_ME", pert);
-    global_dpd_->file2_init(&z2, PSIF_CC_TMP0, irrep, 0, 1, lbl);
-    global_dpd_->dot23(&L1, &X2, &z2, 0, 0, -1, 0);
-    global_dpd_->file2_axpy(&z2, &z1, 1, 0);
+    global_dpd_->dot23(&L1, &X2, &z1, 0, 0, -1, 1);
     global_dpd_->buf4_close(&X2);
-    global_dpd_->file2_close(&z2);
  
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
     global_dpd_->dot24(&z1, &D, &Y1new, 0, 0, 1, 1); 
@@ -557,7 +569,6 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
     global_dpd_->contract442(&X2, &D, &z1, 0, 0, 1.0, 0.0);
-    //global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1"); //Remove?
     global_dpd_->contract222(&z1, &L1, &Y1new, 1, 1, -1.0, 1.0);
     global_dpd_->file2_close(&z1);
 
@@ -580,11 +591,11 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     global_dpd_->contract442(&L2, &X2, &lx, 0, 0, 1.0, 0.0);
-    global_dpd_->file2_close(&lx);
+    //global_dpd_->file2_close(&lx);
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&L2);
     
-    global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 0, 0, "Lx_IJ");    
+    //global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 0, 0, "Lx_IJ");    
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME"); 
     global_dpd_->contract222(&lx, &F, &Y1new, 0, 1, -1.0, 1.0);
     global_dpd_->file2_close(&lx);
@@ -598,11 +609,11 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     //global_dpd_->contract442(&X2, &L2, &lx, 2, 2, 1.0, 0.0);
     global_dpd_->contract442(&L2, &X2, &lx, 2, 2, 1.0, 0.0);
-    global_dpd_->file2_close(&lx);
+    //global_dpd_->file2_close(&lx);
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&L2);
 
-    global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 1, 1, "Lx_AB");
+    //global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 1, 1, "Lx_AB");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");	
     //global_dpd_->contract222(&F, &lx, &Y1new, 0, 1, -1.0, 1.0);   
     global_dpd_->contract222(&F, &lx, &Y1new, 0, 0, -1.0, 1.0);
@@ -754,6 +765,9 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
 
 */
 
+    // Maybe X2 x self.Hvovv first ? 
+    // tmp   =  ndot('mnga,mnef->gaef',self.l2, self.x2)
+    // r_y1 -=  ndot('gief,gaef->ia', self.Hvovv, tmp)
 
     global_dpd_->buf4_init(&lx_iajb, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "LXiajb_2");
     sprintf(lbl, "X_%s_IbjA (%5.3f)", pert, omega);
@@ -777,21 +791,23 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&L2);    
     global_dpd_->buf4_close(&W);
 
-   //Here
+    // tmp   =  ndot('mnga,mnef->gaef',self.l2, self.x2)
+    // r_y1 -=  ndot('gief,gaef->ia', self.Hvovv, tmp)
+
+    // X2 x  Hvovv
+    global_dpd_->buf4_init(&Hx_ijab, PSIF_CC_LR, irrep, 0, 11, 0, 11, 0, "Hx_ijab");
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
-    global_dpd_->buf4_init(&Hx_ijab, PSIF_CC_LR, irrep, 0, 11, 0, 11, 0, "Hx_ijab");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf"); //Compute this part out of core
-   
     global_dpd_->contract444(&X2, &W, &Hx_ijab, 0, 0, 1, 0);
-    global_dpd_->contract442(&Hx_ijab, &L2, &Y1new, 3, 3, -1, 1);
-
-    global_dpd_->buf4_close(&Hx_ijab);
     global_dpd_->buf4_close(&X2);
-    global_dpd_->buf4_close(&L2);
     global_dpd_->buf4_close(&W);
+
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
+    global_dpd_->contract442(&Hx_ijab, &L2, &Y1new, 3, 3, -1, 1);
+    global_dpd_->buf4_close(&Hx_ijab);
+    global_dpd_->buf4_close(&L2);
 
     //------------------------------------------------------------------------------------------------------
 
@@ -807,7 +823,10 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&W);
     */
 
+    //tmp   =  ndot('gmae,mnef->ganf',self.Hvovv, self.x2, prefactor=2.0)
+    //tmp  +=  ndot('gmea,mnef->ganf',self.Hvovv, self.x2, prefactor=-1.0)
 
+    // 2Hvovv x x2 !!!!
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, irrep, 10, 10, 10, 10, 0, "(2 LIjAb - LIjBa) (ia|jb)");
     sprintf(lbl, "X_%s_IAjb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, lbl); 

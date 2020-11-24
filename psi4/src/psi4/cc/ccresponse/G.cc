@@ -58,9 +58,7 @@ void G_build(const char *pert, int irrep, double omega) {
         global_dpd_->contract442(&tIjAb, &Y2, &GMI, 0, 0, 1, 0);
         global_dpd_->buf4_close(&tIjAb);
         global_dpd_->buf4_close(&Y2);
-
         global_dpd_->file2_close(&GMI);
-
 
         sprintf(lbl, "G_%s_AE (%5.3f)", pert, omega);
         global_dpd_->file2_init(&GAE, PSIF_CC_OEI, irrep, 1, 1, lbl);
@@ -73,7 +71,6 @@ void G_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_close(&tIjAb);
         global_dpd_->buf4_close(&Y2);
         global_dpd_->file2_close(&GAE);
-
 
     return;
 }
