@@ -74,7 +74,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     //Added
     dpdfile2 F, z1, z2;
     dpdbuf4 W, WL ,D, X2, Z2, Z3, lx_iajb, X2test, L2test, LIjAb; 
-    dpdfile2 Y1, Y1new, mu1, L1, lt, lx, lx_AB, X1;
+    dpdfile2 Y1, Y1new, mu1, lx_ia, L1, lt, lx, lx_AB, X1;
     dpdbuf4 L2, mu2, Hx_ijab, lx_ijab;
     char lbl[32];
     //int L_irr;
@@ -163,10 +163,15 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
      //-----------------------
 
     // <O|[Hbar(0), X1]|0>
+    sprintf(lbl, "LX_%s_IA (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&lx_ia, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
-    global_dpd_->contract422(&D, &X1, &Y1new, 0, 0, 2, 1); 
+    //global_dpd_->contract422(&D, &X1, &Y1new, 0, 0, 2, 1); 
+    global_dpd_->contract422(&D, &X1, &lx_ia, 0, 0, 1, 1);
+    global_dpd_->file2_axpy(&lx_ia, &Y1new, 2, 0);
+    global_dpd_->file2_close(&lx_ia);
     global_dpd_->buf4_close(&D); 
     global_dpd_->file2_close(&X1);   
 

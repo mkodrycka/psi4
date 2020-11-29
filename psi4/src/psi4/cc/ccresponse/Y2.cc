@@ -146,6 +146,9 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     //tmp   = ndot('me,jb->mejb', self.x1, self.l1, prefactor=2.0)
     //r_y2 += ndot('imae,mejb->ijab', self.Loovv, tmp) 
 
+    sprintf(lbl, "LX_%s_IA (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&lx_ia, PSIF_CC_OEI, 0, 0, 1, lbl);
+/*
     global_dpd_->file2_init(&lx_ia, PSIF_CC_OEI, 0, 0, 1, "Lx_ia");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
@@ -153,6 +156,7 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract422(&D, &X1, &lx_ia, 0, 0, 1.0, 0.0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&D);
+*/
 
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ij|ab)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
@@ -200,7 +204,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
  
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ij,ba)");
     global_dpd_->buf4_axpy(&Z, &Y2new, 2);
-
     global_dpd_->buf4_close(&Z);
 
 
@@ -224,7 +227,8 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     // tmp   = ndot('me,ie->mi', self.x1, self.l1)
     // r_y2 -= ndot('mi,jmba->ijab', tmp, self.Loovv)
 
-    global_dpd_->file2_init(&xl, PSIF_CC_OEI, 0, 0, 0, "xl_mi");
+    sprintf(lbl, "xl_%s_mi (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&xl, PSIF_CC_OEI, irrep, 0, 0, lbl);
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
@@ -392,6 +396,7 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     //tmp   = ndot('me,imbf->eibf', self.x1, self.l2)   //Contract x1 with Hvovv ???
     //r_y2 -= ndot('eibf,fjea->ijab', tmp, self.Hvovv)
 
+/*
     global_dpd_->buf4_init(&lx, PSIF_CC_LR, irrep, 11, 10, 11, 10, 0, "LX (fj,ma)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
@@ -399,13 +404,69 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract244(&X1, &W, &lx, 1, 2, 1.0, 1.0, 0.0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&W);    
+*/
 
-    global_dpd_->buf4_sort(&lx, PSIF_CC_LR, qsrp, 10, 10, "LX (ja,mf)");
-    global_dpd_->buf4_close(&lx);
+    /* Above code replaced to remove disk-space and memory bottlenecks */
+    //sprintf(lbl, "WX_%s_fima (%5.3f)", pert, omega);
+    sprintf(lbl, "WAmEfX1_%s (fj,ma) (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&WX1, PSIF_CC_LR, irrep, 11, 10, 11, 10, 0, lbl);
+    sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
+
+    global_dpd_->file2_mat_init(&X1);
+    global_dpd_->file2_mat_rd(&X1);
+    for (Gbm = 0; Gbm < moinfo.nirreps; Gbm++) {
+        Gef = Gbm;
+        Gjf = Gbm ^ irrep;
+
+        global_dpd_->buf4_mat_irrep_init(&WX1, Gbm);
+        global_dpd_->buf4_mat_irrep_row_init(&W, Gbm);
+        X = init_array(W.params->coltot[Gbm]);
+        for (bm = 0; bm < W.params->rowtot[Gbm]; bm++) {
+            global_dpd_->buf4_mat_irrep_row_rd(&W, Gbm, bm);
+
+            for (Gj = 0; Gj < moinfo.nirreps; Gj++) {
+                Gf = Gjf ^ Gj;
+                Ge = Gef ^ Gf;
+
+                ef = W.col_offset[Gbm][Ge];
+                jf = WX1.col_offset[Gbm][Gj];
+
+                nrows = moinfo.occpi[Gj];
+                ncols = moinfo.virtpi[Gf];
+                nlinks = moinfo.virtpi[Ge];
+
+                if (nrows && ncols && nlinks)
+                    C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &(X1.matrix[Gj][0][0]), nlinks,
+                            &(W.matrix[Gbm][0][Ge]), ncols, 0.0, &(WX1.matrix[Gbm][bm][jf]), ncols);
+            }
+        }
+        global_dpd_->buf4_mat_irrep_row_close(&W, Gbm);
+        global_dpd_->buf4_mat_irrep_wrt(&WX1, Gbm);
+        global_dpd_->buf4_mat_irrep_close(&WX1, Gbm);
+    }
+    global_dpd_->file2_mat_close(&X1);
+    /* out-of-core algorithm done */
+   global_dpd_->buf4_close(&W);
+
+/*
+    global_dpd_->buf4_init(&lx, PSIF_CC_LR, irrep, 11, 10, 11, 10, 0, "LX (fj,ma)");
+    sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
+    global_dpd_->contract244(&X1, &W, &lx, 1, 2, 1.0, 1.0, 0.0);
+    global_dpd_->file2_close(&X1);
+    global_dpd_->buf4_close(&W);    
+*/
+
+    sprintf(lbl, "WAmEfX1_%s (ja,mf) (%5.3f)", pert, omega);
+    global_dpd_->buf4_sort(&WX1, PSIF_CC_LR, qsrp, 10, 10, lbl);
+    global_dpd_->buf4_close(&WX1);
 
     global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "Z (ib,ja)");
 
-    global_dpd_->buf4_init(&lx, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "LX (ja,mf)");
+    global_dpd_->buf4_init(&lx, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, lbl);
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "(2 LIjAb - LIjBa) (ia|jb)");
     global_dpd_->contract444(&L2, &lx, &Z, 0, 0, -1, 0);
     global_dpd_->buf4_close(&L2);
@@ -417,7 +478,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "Z(ij,ab)");
     global_dpd_->buf4_axpy(&Z, &Y2new, 1);
     global_dpd_->buf4_close(&Z);
-
 
 /*
 //sort!!
@@ -463,7 +523,8 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     //tmp   = ndot('me,jmfa->ejfa', self.x1, self.l2)
     //r_y2 -= ndot('fibe,ejfa->ijab', self.Hvovv, tmp)
 
-    global_dpd_->buf4_init(&lx, PSIF_CC_LR, irrep, 11, 11, 11, 11, 0, "LX (fi,bm)");
+    sprintf(lbl, "WX_%s_fibm (%5.3f)", pert, omega); 
+    global_dpd_->buf4_init(&lx, PSIF_CC_LR, irrep, 11, 11, 11, 11, 0, lbl);
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
@@ -471,12 +532,13 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&W);
 
-    global_dpd_->buf4_sort(&lx, PSIF_CC_LR, qrsp, 10, 10, "LX (ib,mf)");
+    sprintf(lbl, "WX_%s_ibmf (%5.3f)", pert, omega);
+    global_dpd_->buf4_sort(&lx, PSIF_CC_LR, qrsp, 10, 10, lbl);
     global_dpd_->buf4_close(&lx);
 
     global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "Z (ib,ja)");
 
-    global_dpd_->buf4_init(&lx, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "LX (ib,mf)");
+    global_dpd_->buf4_init(&lx, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, lbl);
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "(2 LIjAb - LIjBa) (ib|ja)");
     global_dpd_->contract444(&lx, &L2, &Z, 0, 0, -1, 0);
     global_dpd_->buf4_close(&L2);
@@ -527,12 +589,12 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     //r_y2 += ndot('ijfb,fa->ijab', self.l2, tmp)
 
 //sort!!!  
-    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)");
-    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, prqs, 5, 10, "WAmEf 2(Am,Ef) - (Am,fE) (AE,mf)"); //Compute this part out of core
-    global_dpd_->buf4_close(&W);
+//    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)");
+//    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, prqs, 5, 10, "WAmEf 2(Am,Ef) - (Am,fE) (AE,mf)"); //Compute this part out of core
+//    global_dpd_->buf4_close(&W);
 
     global_dpd_->file2_init(&WX, PSIF_CC_OEI, irrep, 1, 1, "Wx");
-    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 5, 10, 5, 10, 0, "WAmEf 2(Am,Ef) - (Am,fE) (AE,mf)");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 5, 10, 5, 10, 0, "WAmEf 2(Am,Ef) - (Am,fE) (AE,mf)"); //Compute out of core!
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->contract422(&W, &X1, &WX, 0, 0, 1, 0);
@@ -608,6 +670,28 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&W);
 
 
+/*
+outfile->Printf("\n\tI am here0");
+
+    sprintf(lbl, "WAmEfX1_%s (fj,ma) (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&WX1, PSIF_CC_LR, irrep, 11, 10, 11, 10, 0, lbl);
+    sprintf(lbl, "WAmEfX1_%s 2(fj,ma) - (fj,am) (%5.3f)", pert, omega);
+    global_dpd_->buf4_scmcopy(&WX1, PSIF_CC_LAMPS, lbl, 2);
+    global_dpd_->buf4_sort_axpy(&WX1, PSIF_CC_HBAR, pqsr, 11, 10, lbl, 1);
+    global_dpd_->buf4_close(&WX1);
+
+outfile->Printf("\n\tI am here1");
+
+    //sort
+    sprintf(lbl, "WAmEfX1_%s 2(fj,ma) - (fj,am) (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&WX1, PSIF_CC_LR, irrep, 11, 10, 11, 10, 0, lbl);
+    sprintf(lbl, "WAmEfX1_%s 2(ja,mf) - (ja,mm) (%5.3f)", pert, omega); 
+    global_dpd_->buf4_sort(&WX1, PSIF_CC_LR, qsrp, 10, 10, lbl);
+    global_dpd_->buf4_close(&WX1);
+
+outfile->Printf("\n\tI am here2");
+*/  
+ 
     sprintf(lbl, "WX_%s_iamf (%5.3f)", pert, omega);
     global_dpd_->buf4_sort(&WX1, PSIF_CC_LR, qsrp, 10, 10, lbl);
     global_dpd_->buf4_close(&WX1);
@@ -615,6 +699,7 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "Z (ia,jb)");
 
     sprintf(lbl, "WX_%s_iamf (%5.3f)", pert, omega);
+    //sprintf(lbl, "WAmEfX1_%s 2(ja,mf) - (ja,mm) (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&WX1, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, lbl);
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "(2 LIjAb - LIjBa) (ia|jb)");
     global_dpd_->contract444(&WX1, &L2, &Z, 0, 0, 1, 0);
@@ -829,7 +914,7 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     //global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "Z (ij,kl)"); 
 
     sprintf(lbl, "WX_%s_ijkl (%5.3f)", pert, omega);
-    global_dpd_->buf4_init(&Z, PSIF_CC_LR, 0, 0, 0, 0, 0, 0, lbl);
+    global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 0, 0, 0, 0, 0, lbl);
 
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 10, 0, 10, 0, "WMnIe");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
