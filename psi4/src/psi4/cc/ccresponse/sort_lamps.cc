@@ -51,7 +51,6 @@ void sort_lamps() {
     global_dpd_->buf4_close(&L);
 }
 
-
 void sort_lamps_quadratic_resp() {
     dpdbuf4 L;
 
@@ -59,9 +58,9 @@ void sort_lamps_quadratic_resp() {
     global_dpd_->buf4_init(&L, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     global_dpd_->buf4_sort(&L, PSIF_CC_LAMPS, psqr, 10, 10, "(2 LIjAb - LIjBa) (ib|ja)");
     global_dpd_->buf4_sort(&L, PSIF_CC_LAMPS, prqs, 10, 10, "(2 LIjAb - LIjBa) (ia|jb)");
+    global_dpd_->buf4_sort(&L, PSIF_CC_LAMPS, pqsr, 0, 5, "(2 LIjAb - LIjBa) (ij,ba)");
     global_dpd_->buf4_close(&L);
 }
-
 
 void sort_integrals_quadratic_resp() {
     dpdbuf4 L2, D, W, WL;

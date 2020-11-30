@@ -163,7 +163,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
      //-----------------------
 
     // <O|[Hbar(0), X1]|0>
-    sprintf(lbl, "LX_%s_IA (%5.3f)", pert, omega);
+    sprintf(lbl, "DX_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&lx_ia, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
