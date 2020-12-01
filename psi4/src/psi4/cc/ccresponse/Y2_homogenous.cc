@@ -70,23 +70,21 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
    
     sprintf(lbl, "New Y_%s_IjAb (%5.3f)", pert, omega); 
     global_dpd_->buf4_init(&Y2new, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); 
-
     global_dpd_->buf4_scm(&Y2new, 0); //Do I need this??  
 
-    //Add Inhomogenous terms
+    //Add inhomogenous terms
     sprintf(lbl, "Inhomo Y_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Y2inhomo, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); 
-
     global_dpd_->buf4_axpy(&Y2inhomo, &Y2new, 1);
     global_dpd_->buf4_close(&Y2inhomo);
 
     sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-
     global_dpd_->buf4_axpy(&Y2, &Y2new, 0.5*omega);    //Make sure about 0.5
 
+    sprintf(lbl, "YF_%s_ijab (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
 
-    global_dpd_->buf4_init(&Z, PSIF_CC_TMP4, irrep, 0, 5, 0, 5, 0, "Z (ij|ab)");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME"); 
     sprintf(lbl, "Y_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&Y1, PSIF_CC_OEI, irrep, 0, 1, lbl);
@@ -113,8 +111,9 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
                for(ab = 0; ab < Z.params->coltot[Gij]; ab++) {
                    a = Z.params->colorb[Gab][ab][0];
                    b = Z.params->colorb[Gab][ab][1];
-                   Z.matrix[Gij][ij][ab]  = 2*Y1.matrix[Gi][i][a] * F.matrix[Gj][j][b]; 
-                   Z.matrix[Gij][ij][ab] -=  Y1.matrix[Gj][j][a] * F.matrix[Gi][i][b];
+                   //Z.matrix[Gij][ij][ab]  = 2*Y1.matrix[Gi][i][a] * F.matrix[Gj][j][b]; 
+                   //Z.matrix[Gij][ij][ab] -=  Y1.matrix[Gj][j][a] * F.matrix[Gi][i][b];
+                   Z.matrix[Gij][ij][ab]  = Y1.matrix[Gi][i][a] * F.matrix[Gj][j][b];
                }
            }
        }
@@ -127,7 +126,17 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_mat_close(&Y1);
     global_dpd_->file2_close(&Y1);
 
-    global_dpd_->buf4_axpy(&Z, &Y2new, 1);
+    global_dpd_->buf4_axpy(&Z, &Y2new, 2);
+
+    //sprintf(lbl, "New Y_%s_IjAb (%5.3f)", pert, omega);
+    //global_dpd_->buf4_sort_axpy(&Y2new, PSIF_CC_LR, pqsr, 0, 5, lbl, -1);
+    sprintf(lbl, "YF_%s_ijba (%5.3f)", pert, omega);
+    global_dpd_->buf4_sort(&Z, PSIF_CC_LR, pqsr, 0, 5, lbl);
+    global_dpd_->buf4_close(&Z);
+ 
+    sprintf(lbl, "YF_%s_ijba (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_axpy(&Z, &Y2new, -1);
     global_dpd_->buf4_close(&Z);
 
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "FAE");
@@ -144,16 +153,23 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&Y2);	
  
 
-    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); //Make it out of core
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); //Compute it out of core
     sprintf(lbl, "Y_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&Y1, PSIF_CC_OEI, irrep, 0, 1, lbl); 
     global_dpd_->contract244(&Y1, &W, &Y2new, 1, 0, 0, 1.0, 1.0);
     global_dpd_->buf4_close(&W);
 
+    
+    sprintf(lbl, "WMnIeY1_%s_ijab (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, lbl);
+
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (nM,eI)"); 
-    global_dpd_->contract424(&W, &Y1, &Y2new, 3, 0, 0, -1.0, 1.0);
+    global_dpd_->contract424(&W, &Y1, &Z, 3, 0, 0, 1.0, 0);
+    global_dpd_->buf4_axpy(&Z, &Y2new, -1);
+    //global_dpd_->contract424(&W, &Y1, &Y2new, 3, 0, 0, -1.0, 1.0);
     global_dpd_->file2_close(&Y1);
     global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&Z);
 
 
     // r_y2 += ndot('ieam,mjeb->ijab', self.Hovvo, self.y2, prefactor=2.0)

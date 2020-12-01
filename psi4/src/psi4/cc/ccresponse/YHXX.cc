@@ -48,7 +48,7 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
 
     double result = 0.0;
     dpdfile2 X1, Y1, F, z, z1, Z_final, t1;
-    dpdbuf4 W, Z, Z2, Y2, Z1, T2; 
+    dpdbuf4 W, Z, Z2, Y2, Z1, T2, YF; 
     char lbl[32];
     int i, j, a, b, ab, ij;
     int Gej, Gab, Gij, Gi, Gj, Ga, Gb, Ge;
@@ -59,6 +59,7 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     sprintf(lbl, "Y_%s_IA (%5.3f)", pert_x, omega_x);
     global_dpd_->file2_init(&Y1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
 
+/*
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, irrep_x, 0, 5, 0, 5, 0, "Z2 (ij|ab)");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
 
@@ -96,29 +97,59 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->file2_mat_close(&Y1);
     global_dpd_->file2_mat_close(&F);
     global_dpd_->file2_close(&F);
+*/
 
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z (ij,ab)");
     global_dpd_->buf4_scm(&Z, 0);
-    global_dpd_->buf4_axpy(&Z2, &Z, 1);
-    global_dpd_->buf4_close(&Z2);
 
-    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
-    global_dpd_->contract424(&W, &Y1, &Z, 3, 0, 0, -1, 1);
+    sprintf(lbl, "YF_%s_ijab (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&YF, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_axpy(&YF, &Z, -1); 
 
-    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, qprs, 0, 11, "2WMnIe - WnMIe (nM,eI)");   //sort
-    global_dpd_->buf4_close(&W);
+    sprintf(lbl, "YF_%s_jiba (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_sort(&YF, PSIF_CC_LR, qpsr, 0, 5, lbl);
+    global_dpd_->buf4_close(&YF);
 
+    sprintf(lbl, "YF_%s_jiba (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&YF, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_axpy(&YF, &Z, -1);    
+    global_dpd_->buf4_close(&YF);
+
+    //global_dpd_->buf4_axpy(&Z2, &Z, 1);
+    //global_dpd_->buf4_close(&Z2);
+
+//    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
+//    global_dpd_->contract424(&W, &Y1, &Z, 3, 0, 0, -1, 1);
+//    global_dpd_->buf4_close(&W);
+
+   /*
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z2 (ij,ab)");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (nM,eI)");
     global_dpd_->contract424(&W, &Y1, &Z2, 3, 0, 0, -1, 0);   
     global_dpd_->buf4_close(&W);
+    */
+    sprintf(lbl, "WMnIeY1_%s_ijab (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Z2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, lbl);
 
-    global_dpd_->buf4_sort(&Z2, PSIF_CC_TMP0, pqsr, 0, 5, "Z2 (ij,ba)");   //sort
+    //global_dpd_->buf4_axpy(&Z2, &Z, -1);
+
+    sprintf(lbl, "WMnIeY1_%s_ijba (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_sort(&Z2, PSIF_CC_HBAR, pqsr, 0, 5, lbl);   //sort
+    sprintf(lbl, "WMnIeY1_%s_jiab (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_sort(&Z2, PSIF_CC_HBAR, qprs, 0, 5, lbl);
     global_dpd_->buf4_close(&Z2);
 
-    global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z2 (ij,ba)");
-    global_dpd_->buf4_axpy(&Z2, &Z, 1);  
+    sprintf(lbl, "WMnIeY1_%s_ijba (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Z2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, lbl); 
+    global_dpd_->buf4_axpy(&Z2, &Z, -1);  
     global_dpd_->buf4_close(&Z2);
+
+    sprintf(lbl, "WMnIeY1_%s_jiab (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Z2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, lbl); 
+    global_dpd_->buf4_axpy(&Z2, &Z, -1);  
+    global_dpd_->buf4_close(&Z2);
+
+   
 
 //Here Compute out of core!!!!!!!!
 
@@ -1468,14 +1499,11 @@ double Y2HX1X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
 
 }
 
-
-
 double YHXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y, int irrep_y, double omega_y,
 		     const char *pert_z, int irrep_z, double omega_z) {
 
     double hyper = 0.0;
 
- 
     // *** <O|Y1(A)[[Hbar(0),X1(B),X1(C)]]|0> ***
 
     hyper += Y1HX1X1(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z); 
