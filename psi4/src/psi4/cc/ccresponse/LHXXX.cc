@@ -491,6 +491,7 @@ double LHX2X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *
     dpdfile2 X1;
     dpdbuf4 l2, X2, Z, XD, XL, D;
     char lbl[32];
+    double Y2_norm;
 
     sprintf(lbl, "X2D_%s_ijlk (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&XD, PSIF_CC_LR, irrep_x, 0, 0, 0, 0, 0, lbl);
