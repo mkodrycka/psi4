@@ -440,7 +440,8 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     // r_y1 -=  ndot('gief,gaef->ia', self.Hvovv, tmp)
 
     // X2 x  Hvovv
-    global_dpd_->buf4_init(&Hx_ijab, PSIF_CC_LR, irrep, 0, 11, 0, 11, 0, "Hx_ijab");
+    sprintf(lbl, "X2WAmEf_%s_ijab (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&Hx_ijab, PSIF_CC_LR, irrep, 0, 11, 0, 11, 0, lbl);
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
@@ -537,12 +538,20 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&lx_ijab);
     global_dpd_->buf4_close(&W); 
 
+
+    //tmp   = ndot('mofa,mnef->oane', self.l2, self.x2) 
+    //r_y1 += ndot('inoe,oane->ia', self.Hooov, tmp)
+
     global_dpd_->buf4_init(&lx_iajb, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "LXiajb_2"); //I am reusing here
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "WMnIe (Mn,eI)");
 
     global_dpd_->contract442(&W, &lx_iajb, &Y1new, 0, 1, 1, 1);
     global_dpd_->buf4_close(&lx_iajb);
     global_dpd_->buf4_close(&W);
+
+
+    //tmp   = ndot('onea,mnef->oamf', self.l2, self.x2) 
+    //r_y1 += ndot('miof,oamf->ia', self.Hooov, tmp)
 
     global_dpd_->buf4_init(&lx_iajb, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "LXiajb_3");  
 
@@ -564,7 +573,35 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->dot14(&lx, &W, &Y1new, 1, 0, -1.0, 1.0);
     global_dpd_->file2_close(&lx);
     global_dpd_->buf4_close(&W);
-   
+  
+
+    //TO DO!!!
+    // tmp   = ndot('imoe,mnef->ionf', self.Hooov, self.x2, prefactor=-2.0) 
+    // tmp  -= ndot('mioe,mnef->ionf', self.Hooov, self.x2, prefactor=-1.0)
+
+/*    
+    global_dpd_->buf4_init(&lx_iajb, PSIF_CC_LR, irrep, 10, 0, 10, 0, 0, "WXiajk cos");
+
+    sprintf(lbl, "X_%s_IAjb (%5.3f)", pert, omega);
+    global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, lbl);
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 10, 0, 10, 0, "2WMnIe - WnMIe (MI,nE)");
+
+    global_dpd_->contract444(&X2, &W, &lx_iajb, 1, 0, 1, 0);
+    global_dpd_->buf4_close(&X2);
+    global_dpd_->buf4_close(&W);
+
+    //global_dpd_->buf4_sort(&lx_iajb, PSIF_CC_LR, psrq, 0, 10, "LXiajb_sorted"); 	
+    //global_dpd_->buf4_close(&lx_iajb);
+
+
+    //global_dpd_->buf4_init(&lx_iajb, PSIF_CC_LR, irrep, 0, 10, 0, 10, 0, "LXiajb_sorted");
+    //global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, irrep, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, irrep, 10, 10, 10, 10, 0, "(2 LIjAb - LIjBa) (ia|jb)");
+    global_dpd_->contract442(&lx_iajb, &L2, &Y1new, 2, 3, -1, 1); 
+    global_dpd_->buf4_close(&L2); 
+    global_dpd_->buf4_close(&lx_iajb);
+*/
+
     global_dpd_->buf4_init(&lx_iajb, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "LXiajb");
     
     sprintf(lbl, "X_%s_IAjb (%5.3f)", pert, omega);
@@ -580,6 +617,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract442(&W, &lx_iajb, &Y1new, 0, 1, -1, 1);   
     global_dpd_->buf4_close(&lx_iajb);
     global_dpd_->buf4_close(&W);
+
 
     /*
     Y1_norm = 0;

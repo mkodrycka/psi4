@@ -82,10 +82,10 @@ void hyper() {
                 pertbar(pert, moinfo.mu_irreps[alpha], 0);
                 compute_X(pert, moinfo.mu_irreps[alpha], params.omega[i]);
                 compute_Y(pert, moinfo.mu_irreps[alpha], params.omega[i]);
-                if (params.omega[i] != 0.0){
-		    compute_X(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
-		    compute_Y(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
-		}
+                //if (params.omega[i] != 0.0){
+		//    compute_X(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
+		//    compute_Y(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
+		//}
             }
      
         }

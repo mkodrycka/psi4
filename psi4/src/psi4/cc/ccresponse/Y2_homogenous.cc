@@ -313,7 +313,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&Z);
 */
 
-//    if (params.abcd == "OLD") {
+    if (params.abcd == "OLD") {
         sprintf(lbl, "Z(Ab,Ij) %s", pert);
         global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 5, 0, 5, 0, 0, lbl);
         global_dpd_->buf4_init(&I, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
@@ -328,7 +328,6 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); /* re-open X2new here */
         global_dpd_->buf4_close(&Z);
 
-/*
     } else if (params.abcd == "NEW") {
         timer_on("ABCD:new");
 
@@ -441,7 +440,6 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
 
         timer_off("ABCD:new");
     }
-*/
 
     sprintf(lbl, "Z(Ij,am) %s", pert);
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 11, 0, 11, 0, lbl);
@@ -484,8 +482,9 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
            Y2_norm = global_dpd_->buf4_dot_self(&Z_final);
            Y2_norm = sqrt(Y2_norm);
            outfile->Printf("\n\tHvvvvY form Y2, omega: %20.15f\n", Y2_norm);
-           outfile->Printf("\t pert: %2.2f\n", pert);  
+           outfile->Printf("\t pert: %s\n", pert);  
 	   outfile->Printf("\t omega: %2.2f\n", omega);
+           outfile->Printf("\t omega: %d\n", irrep);
 */
 
     global_dpd_->buf4_axpy(&Z_final, &Y2new, 0.5);
