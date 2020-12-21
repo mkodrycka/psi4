@@ -249,6 +249,24 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     // tmp   = ndot('me,ie->mi', self.x1, self.l1)
     // r_y2 -= ndot('mi,jmba->ijab', tmp, self.Loovv)
 
+    sprintf(lbl, "xl_test_%s_mi (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&xl, PSIF_CC_OEI, irrep, 0, 0, lbl);
+    sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
+    global_dpd_->contract222(&X1, &L1, &xl, 0, 0, 1.0, 0.0);
+    global_dpd_->file2_close(&L1);
+
+           outfile->Printf("\n\tomega: %2.2f", omega);
+           outfile->Printf("\n\tirrep: %d", irrep);
+           outfile->Printf("\n\tpert: %s", pert);
+           Y2_norm = global_dpd_->file2_dot_self(&xl);
+           Y2_norm = sqrt(Y2_norm);
+           outfile->Printf("\n\tT Norm of XL: !!! %20.15f", Y2_norm);
+
+    global_dpd_->file2_close(&xl);
+
+
     sprintf(lbl, "xl_%s_mi (%5.3f)", pert, omega);
     global_dpd_->file2_init(&xl, PSIF_CC_OEI, irrep, 0, 0, lbl);
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
@@ -256,6 +274,14 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
     global_dpd_->contract222(&X1, &L1, &xl, 0, 0, 1.0, 0.0);
     global_dpd_->file2_close(&L1);
+
+           outfile->Printf("\n\tomega: %2.2f", omega);
+           outfile->Printf("\n\tirrep: %d", irrep);
+           outfile->Printf("\n\tpert: %s", pert);
+           Y2_norm = global_dpd_->file2_dot_self(&xl);
+           Y2_norm = sqrt(Y2_norm);
+           outfile->Printf("\n\tNorm of XL: !!! %20.15f", Y2_norm);
+
 
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
     global_dpd_->contract244(&xl, &D, &Y2new, 0, 0, 0, -1.0, 1);
@@ -1030,12 +1056,14 @@ outfile->Printf("\n\tI am here2");
     //r_y2 += ndot('ijmn,mnab->ijab', tmp, self.get_MO('oovv')) 
 
     //Can we reuse this part?
-    //global_dpd_->buf4_init(&test, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, "test");
-    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 0, 0, 0, 0, "Z (ij,kl)");    
+    sprintf(lbl, "LX_%s_ijkl (%5.3f)", pert, omega);  
+    global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 0, 0, 0, 0, 0, lbl);    
+
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-    global_dpd_->contract444(&L2, &X2, &Z, 0, 0, 0.5, 0);
+    global_dpd_->contract444(&L2, &X2, &Z, 0, 0, 1.0, 0);
+    global_dpd_->buf4_scm(&Z, 0.5); 
     global_dpd_->buf4_close(&L2);
     global_dpd_->buf4_close(&X2);
 

@@ -48,9 +48,10 @@ namespace ccresponse {
 
 double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x, int irrep_x, double omega_x,
 		     const char *pert_y, int irrep_y, double omega_y) {
+
     double hyper = 0.0;
-    dpdfile2 Y1, yt;
-    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc;
+    dpdfile2 Y1, yt, LX;
+    dpdfile2 X1, mu1, z, z1, l1, mu, lt, xc, xl;
     dpdbuf4 X2, Y2, l2, mu2, z2, Z, t2;
     char lbl[32];
     double Y1_norm;
@@ -58,6 +59,7 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
     /*** L1 * MuBAR * X1 * X1 + L2 * MuBAR * X1 * X2
                 + L2 * MuBAR * X2 * X1 ***/
 
+/*
     global_dpd_->file2_init(&z, PSIF_CC_TMP0, 0, 0, 0, "z_IJ");
 
     global_dpd_->file2_init(&l1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1"); 
@@ -66,11 +68,34 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
     global_dpd_->contract222(&l1, &X1, &z, 0, 0, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->file2_close(&l1);
+*/
+
+/*
+    global_dpd_->file2_init(&z, PSIF_CC_TMP0, 0, 0, 0, "z_IJ");
 
     global_dpd_->buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa"); 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_y, omega_y);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep_y, 0, 5, 0, 5, 0, lbl);
-    global_dpd_->contract442(&l2, &X2, &z, 0, 0, 1.0, 1.0);
+    //global_dpd_->contract442(&l2, &X2, &z, 0, 0, 1.0, 1.0);
+    global_dpd_->contract442(&X2, &l2, &z, 0, 0, 1.0, 0.0);
+*/
+
+    global_dpd_->file2_init(&z, PSIF_CC_TMP0, 0, 0, 0, "z_IJ");
+    global_dpd_->file2_scm(&z, 0); 
+
+    sprintf(lbl, "Lx_%s_IJ (%5.3f)", pert_y, omega_y);
+    global_dpd_->file2_init(&LX, PSIF_CC_OEI, irrep_y, 0, 0, lbl);
+
+    global_dpd_->file2_axpy(&LX, &z, 1, 1);
+    global_dpd_->file2_close(&LX);
+
+
+    sprintf(lbl, "xl_%s_mi (%5.3f)", pert_y, omega_y);
+    global_dpd_->file2_init(&xl, PSIF_CC_OEI, irrep_y, 0, 0, lbl);
+
+    global_dpd_->file2_axpy(&xl, &z, 1, 0);
+    global_dpd_->file2_close(&xl);
+
 
     global_dpd_->file2_init(&z1, PSIF_CC_TMP1, 0, 0, 0, "z_IJ");
 
@@ -78,7 +103,8 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
     global_dpd_->file2_init(&mu1, PSIF_CC_OEI, irrep_c, 0, 1, lbl);
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_x, omega_x);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
-    global_dpd_->contract222(&X1, &mu1, &z1, 0, 0, 1, 0);
+    //global_dpd_->contract222(&X1, &mu1, &z1, 0, 0, 1, 0);
+    global_dpd_->contract222(&mu1, &X1, &z1, 0, 0, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->file2_close(&mu1);  
 
@@ -99,18 +125,24 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
 
     global_dpd_->file2_init(&z1, PSIF_CC_TMP1, 0, 0, 0, "z_IJ");
 
+/*
     global_dpd_->file2_init(&l1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_x, omega_x);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
     global_dpd_->contract222(&X1, &l1, &z1, 0, 0, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->file2_close(&l1);
+*/
 
-    hyper -= global_dpd_->file2_dot(&z, &z1);
+    sprintf(lbl, "xl_%s_mi (%5.3f)", pert_x, omega_x);
+    global_dpd_->file2_init(&xl, PSIF_CC_OEI, irrep_x, 0, 0, lbl);
+
+    hyper -= global_dpd_->file2_dot(&z, &xl);
 
     global_dpd_->file2_close(&z);
-    global_dpd_->file2_close(&z1);
+    global_dpd_->file2_close(&xl);
 
+/*
     global_dpd_->buf4_init(&z2, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "Z(Ij,kb)");
 
     global_dpd_->buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
@@ -119,6 +151,10 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
     global_dpd_->contract244(&X1, &l2, &z2, 1, 2, 1, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
+*/
+
+    sprintf(lbl, "LX_%s_ijka (%5.3f)", pert_x, omega_x);  
+    global_dpd_->buf4_init(&z2, PSIF_CC_LR, irrep_x, 0, 10, 0, 10, 0, lbl);
 
     global_dpd_->file2_init(&z, PSIF_CC_TMP0, 0, 0, 1, "z_IA"); 
 
@@ -142,22 +178,28 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
     global_dpd_->file2_init(&mu1, PSIF_CC_OEI, irrep_c, 0, 1, lbl);
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
-    global_dpd_->contract222(&mu1, &X1, &z, 0, 0, 1, 0);
+    global_dpd_->contract222(&X1, &mu1, &z, 0, 0, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->file2_close(&mu1);
 
+    sprintf(lbl, "Lx_%s_IJ (%5.3f)", pert_x, omega_x);
+    global_dpd_->file2_init(&z1, PSIF_CC_OEI, irrep_x, 0, 0, lbl);
+
+/*
     global_dpd_->file2_init(&z1, PSIF_CC_TMP1, 0, 0, 0, "z_IJ");
 
     global_dpd_->buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     global_dpd_->contract442(&X2, &l2, &z1, 0, 0, 1.0, 0.0);
+*/
 
     hyper -= global_dpd_->file2_dot(&z, &z1);
 
     global_dpd_->file2_close(&z);
     global_dpd_->file2_close(&z1);
 
+/*
     global_dpd_->buf4_init(&z2, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "Z(Ij,kb)");
 
     global_dpd_->buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
@@ -167,6 +209,10 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
 
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
+*/
+
+    sprintf(lbl, "LX_%s_ijka (%5.3f)", pert_y, omega_y);
+    global_dpd_->buf4_init(&z2, PSIF_CC_LR, irrep_y, 0, 10, 0, 10, 0, lbl);
 
     global_dpd_->file2_init(&z1, PSIF_CC_TMP0, 0, 0, 1, "z_IA"); 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_x, omega_x);

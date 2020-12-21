@@ -329,7 +329,10 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     // *** <O|L2(0)|[Hbar(0), X2]|0> ***
     
     // Lijab * Xijab -> Lx_IJ //
-    global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 0, 0, "Lx_IJ");
+    sprintf(lbl, "Lx_%s_IJ (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 0, 0, lbl);
+
+    //global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 0, 0, "Lx_IJ");
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
@@ -568,7 +571,9 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&lx_iajb);
     global_dpd_->buf4_close(&W);
 
-    global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 0, 0, "Lx_IJ");
+    sprintf(lbl, "Lx_%s_IJ (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 0, 0, lbl);
+    //global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 0, 0, "Lx_IJ");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
     global_dpd_->dot14(&lx, &W, &Y1new, 1, 0, -1.0, 1.0);
     global_dpd_->file2_close(&lx);
