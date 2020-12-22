@@ -102,6 +102,7 @@ double LHX1X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *
     dpdfile2 X1; 
     dpdbuf4 l2, W, WX, XL, Z; 
     char lbl[32];
+    double Y1_norm;
 
 /*
     sprintf(lbl, "XW_%s (ij,kl) (%5.3f)", pert_x, omega_x);
@@ -119,6 +120,7 @@ double LHX1X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->buf4_close(&XW);
 */
 
+/*
     sprintf(lbl, "XL_%s (ij,al) (%5.3f)", pert_z, omega_z);    
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 11, 0, 11, 0, lbl);
 
@@ -128,7 +130,11 @@ double LHX1X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract424(&l2, &X1, &XL, 3, 1, 0, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
+*/
 
+    sprintf(lbl, "LX_%s_jiak (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_z, 0, 11, 0, 11, 0, lbl);
+        
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "Z(ij,kl)");
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
@@ -175,6 +181,7 @@ double LHX1X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *
 
     //FInd intermediate for XL!!!!
 
+/*
     sprintf(lbl, "XL_%s (ij,ka) (%5.3f)", pert_z, omega_z); 
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 10, 0, 10, 0, lbl);
 
@@ -184,6 +191,10 @@ double LHX1X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract244(&X1, &l2, &XL, 1, 2, 1, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
+*/
+
+    sprintf(lbl, "LX_%s_ijka (%5.3f)", pert_z, omega_z);  
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_z, 0, 10, 0, 10, 0, lbl);
   
     sprintf(lbl, "Z_%s (ij,kl) (%5.3f)", pert_y, omega_y);    
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep_y, 0, 0, 0, 0, 0, lbl);
@@ -200,7 +211,7 @@ double LHX1X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *
     sprintf(lbl, "WX_%s_ijkl (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&WX, PSIF_CC_LR, irrep_x, 0, 0, 0, 0, 0, lbl);
 
-    result = global_dpd_->buf4_dot(&Z,&WX);
+    result = global_dpd_->buf4_dot(&Z, &WX);
 
     global_dpd_->buf4_close(&WX);
     global_dpd_->buf4_close(&Z);
@@ -244,6 +255,7 @@ double LHX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, srqp, 0, 10, lbl);
     global_dpd_->buf4_close(&Z);
 
+/*
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "XL(ij,la)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_z, omega_z);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_z, 0, 1, lbl);
@@ -251,11 +263,15 @@ double LHX1X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract244(&X1, &l2, &XL, 1, 2, 1, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
+*/
+
+    sprintf(lbl, "LX_%s_ijka (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_z, 0, 10, 0, 10, 0, lbl);
 
     sprintf(lbl, "Z_%s (jk,la) (%5.3f)", pert_y, omega_y);
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep_y, 0, 10, 0, 10, 0, lbl);
 
-    result = global_dpd_->buf4_dot(&XL,&Z);
+    result = global_dpd_->buf4_dot(&XL, &Z);
 
     global_dpd_->buf4_close(&XL);
     global_dpd_->buf4_close(&Z);
@@ -297,6 +313,7 @@ double LHX1X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, rspq, 0, 11, lbl);
     global_dpd_->buf4_close(&Z);
 
+/*
     sprintf(lbl, "XL_%s (ij,al) (%5.3f)", pert_z, omega_z);
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 11, 0, 11, 0, "XL(ij,al)");
 
@@ -306,6 +323,11 @@ double LHX1X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract424(&l2, &X1, &XL, 3, 1, 0, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
+*/
+
+    sprintf(lbl, "LX_%s_jiak (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_z, 0, 11, 0, 11, 0, lbl);
+
 
     sprintf(lbl, "Z_%s (jk,al) (%5.3f)", pert_y, omega_y);
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep_y, 0, 11, 0, 11, 0, lbl);
@@ -327,8 +349,10 @@ double LHX2X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *
     char lbl[32];
     double Y2_norm;
 
+/*
     sprintf(lbl, "XL_%s (ij,al) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_x, 0, 11, 0, 11, 0, lbl);
+
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_x, omega_x);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
@@ -337,6 +361,7 @@ double LHX2X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
     global_dpd_->buf4_close(&XL);
+*/
 
 /*
     sprintf(lbl, "XD_%s (ij,al) (%5.3f)", pert_y, omega_y); 
@@ -373,10 +398,13 @@ double LHX2X1X1_p1(const char *pert_x, int irrep_x, double omega_x, const char *
 
     sprintf(lbl, "Z_%s (jl,ak) (%5.3f)", pert_z, omega_z); 
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep_z, 0, 11, 0, 11, 0, lbl);
-    sprintf(lbl, "XL_%s (ij,al) (%5.3f)", pert_x, omega_x);
-    global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_x, 0, 11, 0, 11, 0, lbl);  
+    //sprintf(lbl, "XL_%s (ij,al) (%5.3f)", pert_x, omega_x);
+    //global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_x, 0, 11, 0, 11, 0, lbl);  
 
-    result = global_dpd_->buf4_dot(&Z,&XL);
+    sprintf(lbl, "LX_%s_jiak (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_x, 0, 11, 0, 11, 0, lbl);
+
+    result = global_dpd_->buf4_dot(&Z, &XL);
      
     global_dpd_->buf4_close(&Z);
     global_dpd_->buf4_close(&XL);
@@ -395,19 +423,25 @@ double LHX2X1X1_p2(const char *pert_x, int irrep_x, double omega_x, const char *
     sprintf(lbl, "xl_%s_AB (%5.3f)", pert_x, omega_x);
     global_dpd_->file2_init(&xl_ab, PSIF_CC_OEI, irrep_x, 1, 1, lbl);
 
+/*
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     global_dpd_->contract442(&X2, &l2, &xl_ab, 2, 2, 1, 0);
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&l2);
+*/
+
+    sprintf(lbl, "LX_%s_AB (%5.3f)", pert_x, omega_x);
+    global_dpd_->file2_init(&xl_ab, PSIF_CC_OEI, irrep_x, 1, 1, lbl);
 
     sprintf(lbl, "z_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&z, PSIF_CC_TMP0, irrep_y, 0, 1, "z_IA");
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
-    global_dpd_->contract222(&X1, &xl_ab, &z, 0, 0, 1, 0);    
+    //global_dpd_->contract222(&X1, &xl_ab, &z, 0, 0, 1, 0);    
+    global_dpd_->contract222(&X1, &xl_ab, &z, 0, 1, 1, 0); 
     global_dpd_->file2_close(&X1); 
     global_dpd_->file2_close(&xl_ab);	   
 
@@ -442,6 +476,7 @@ double LHX2X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *
     dpdbuf4 l2, X2, D;
     char lbl[32];
 
+/*
     sprintf(lbl, "xl_%s_IJ (%5.3f)", pert_x, omega_x);
     global_dpd_->file2_init(&xl_ij, PSIF_CC_OEI, irrep_x, 0, 0, "xl_IJ");
 
@@ -451,6 +486,7 @@ double LHX2X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract442(&X2, &l2, &xl_ij, 0, 0, 1, 0);
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&l2);
+*/
 
     sprintf(lbl, "DX_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&dx, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
@@ -472,9 +508,13 @@ double LHX2X1X1_p3(const char *pert_x, int irrep_x, double omega_x, const char *
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_z, omega_z);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_z, 0, 1, lbl);
-    global_dpd_->contract222(&dx, &X1, &z, 0, 0, 1, 0);
+    global_dpd_->contract222(&X1, &dx, &z, 0, 0, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->file2_close(&dx);
+
+    sprintf(lbl, "Lx_%s_IJ (%5.3f)", pert_x, omega_x);
+    global_dpd_->file2_init(&xl_ij, PSIF_CC_OEI, irrep_x, 0, 0, lbl);
+
 
     result = global_dpd_->file2_dot(&xl_ij,&z);
 
@@ -499,7 +539,6 @@ double LHX2X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *
     sprintf(lbl, "X2D_%s_ijkl (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_sort(&XD, PSIF_CC_LR, pqsr, 0, 0, lbl);
     global_dpd_->buf4_close(&XD);
-
 /*
     sprintf(lbl, "XD_%s (ij,kl) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&XD, PSIF_CC_TMP0, irrep_x, 0, 0, 0, 0, 0, lbl);
@@ -512,6 +551,7 @@ double LHX2X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->buf4_close(&D);
 */
 
+/*
     sprintf(lbl, "XL_%s (ij,al) (%5.3f)", pert_z, omega_z);
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 11, 0, 11, 0, "XL(ij,al)");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_z, omega_z);
@@ -520,9 +560,13 @@ double LHX2X1X1_p4(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract424(&l2, &X1, &XL, 3, 1, 0, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
+*/
 
-    sprintf(lbl, "XL_%s (ij,kl) (%5.3f)", pert_y, omega_y);
-    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep_y, 0, 0, 0, 0, 0, "Z(ij,kl)");
+    sprintf(lbl, "LX_%s_jiak (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_z, 0, 11, 0, 11, 0, lbl);
+
+    sprintf(lbl, "Z_%s (ij,kl) (%5.3f)", pert_y, omega_y);
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep_y, 0, 0, 0, 0, 0, lbl);
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
@@ -572,6 +616,7 @@ double LHX2X1X1_p5(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, prqs, 0, 11, lbl);
     global_dpd_->buf4_close(&Z);
 
+/*
     sprintf(lbl, "XL_%s (ij,al) (%5.3f)", pert_z, omega_z);
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 11, 0, 11, 0, lbl);
 
@@ -588,6 +633,18 @@ double LHX2X1X1_p5(const char *pert_x, int irrep_x, double omega_x, const char *
     
     sprintf(lbl, "XL_%s (il,aj) (%5.3f)", pert_z, omega_z);
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 11, 0, 11, 0, lbl);
+*/
+
+    sprintf(lbl, "LX_%s_jiak (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_z, 0, 11, 0, 11, 0, lbl);
+
+    sprintf(lbl, "XL_%s (il,aj) (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_sort(&XL, PSIF_CC_TMP0, psrq, 0, 11, lbl);
+    global_dpd_->buf4_close(&XL);
+
+    sprintf(lbl, "XL_%s (il,aj) (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 11, 0, 11, 0, lbl);
+
     sprintf(lbl, "Z_%s (jk,al) (%5.3f)", pert_y, omega_y); 
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, lbl);
 
@@ -623,6 +680,8 @@ double LHX2X1X1_p6(const char *pert_x, int irrep_x, double omega_x, const char *
 
 */
 
+//I am here..
+
     sprintf(lbl, "XD_%s (ja,jl) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_sort(&XD, PSIF_CC_TMP0, rqps, 10, 0, lbl);
     global_dpd_->buf4_close(&XD);
@@ -642,6 +701,7 @@ double LHX2X1X1_p6(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, prqs, 0, 11, lbl);
     global_dpd_->buf4_close(&Z);
 
+/*
     sprintf(lbl, "XL_%s (ij,la) (%5.3f)", pert_z, omega_z);
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 10, 0, 10, 0, lbl);
 
@@ -651,6 +711,10 @@ double LHX2X1X1_p6(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract244(&X1, &l2, &XL, 1, 2, 1, 1, 0);
     global_dpd_->file2_close(&X1);
     global_dpd_->buf4_close(&l2);
+*/
+
+    sprintf(lbl, "LX_%s_ijka (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_z, 0, 10, 0, 10, 0, lbl);
 
     sprintf(lbl, "XL_%s (il,aj) (%5.3f)", pert_z, omega_z);
     global_dpd_->buf4_sort(&XL, PSIF_CC_TMP0, prsq, 0, 11, lbl);
@@ -692,10 +756,12 @@ double LHX2X1X1_p7(const char *pert_x, int irrep_x, double omega_x, const char *
 
     sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_y, 0, 1, lbl); 
-    global_dpd_->contract244(&X1, &XD, &Z, 1, 2, 1, 1, 0);
+    //global_dpd_->contract244(&X1, &XD, &Z, 1, 2, 1, 1, 0);
+    global_dpd_->contract244(&X1, &XD, &Z, 1, 2, 0, 1, 0);
     global_dpd_->buf4_close(&XD);
     global_dpd_->file2_close(&X1); 
-    
+
+/*
     sprintf(lbl, "XL_%s (ij,kl) (%5.3f)", pert_z, omega_z);
     global_dpd_->buf4_init(&XL, PSIF_CC_TMP0, irrep_z, 0, 0, 0, 0, 0, lbl);
 
@@ -705,8 +771,12 @@ double LHX2X1X1_p7(const char *pert_x, int irrep_x, double omega_x, const char *
     global_dpd_->contract444(&X2, &l2, &XL, 0, 0, 1, 0);
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&l2);
+*/
 
-    result = global_dpd_->buf4_dot(&Z,&XL);
+    sprintf(lbl, "LX_%s_ijkl (%5.3f)", pert_z, omega_z);
+    global_dpd_->buf4_init(&XL, PSIF_CC_LR, irrep_z, 0, 0, 0, 0, 0, lbl);
+  
+    result = 2.0 * global_dpd_->buf4_dot(&Z, &XL);
 
     global_dpd_->buf4_close(&Z);
     global_dpd_->buf4_close(&XL);

@@ -346,7 +346,9 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_close(&F);  
 
     // Lijab * Xijab -> Lx_AB 
-    global_dpd_->file2_init(&lx, PSIF_CC_OEI, 0, 1, 1, "Lx_AB");
+    sprintf(lbl, "LX_%s_AB (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 1, 1, lbl);
+
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
@@ -483,7 +485,9 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     //global_dpd_->file2_close(&lx);    
 
         /* Above code replaced to remove disk-space and memory bottlenecks */
-        global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 1, 1, "Lx_AB");
+//        global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 1, 1, "Lx_AB");
+        sprintf(lbl, "LX_%s_AB (%5.3f)", pert, omega);
+        global_dpd_->file2_init(&lx, PSIF_CC_OEI, irrep, 1, 1, lbl);
         global_dpd_->file2_mat_init(&lx);
         global_dpd_->file2_mat_rd(&lx);
         global_dpd_->file2_mat_init(&Y1new);

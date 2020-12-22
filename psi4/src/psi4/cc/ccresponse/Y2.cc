@@ -1055,15 +1055,15 @@ outfile->Printf("\n\tI am here2");
     //tmp   = ndot('ijef,mnef->ijmn', self.l2, self.x2, prefactor=0.5)        
     //r_y2 += ndot('ijmn,mnab->ijab', tmp, self.get_MO('oovv')) 
 
-    //Can we reuse this part?
+    //Can we reuse this part? YES!
     sprintf(lbl, "LX_%s_ijkl (%5.3f)", pert, omega);  
     global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 0, 0, 0, 0, 0, lbl);    
 
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-    global_dpd_->contract444(&L2, &X2, &Z, 0, 0, 1.0, 0);
-    global_dpd_->buf4_scm(&Z, 0.5); 
+    global_dpd_->contract444(&L2, &X2, &Z, 0, 0, 0.5, 0);
+    //global_dpd_->buf4_scm(&Z, 0.5); 
     global_dpd_->buf4_close(&L2);
     global_dpd_->buf4_close(&X2);
 
