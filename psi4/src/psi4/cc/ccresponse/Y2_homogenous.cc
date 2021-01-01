@@ -289,7 +289,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
 
     //r_y2 += ndot('ijef,efab->ijab', self.y2, self.Hvvvv, prefactor=0.5)
 
-    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert, omega);
+    sprintf(lbl, "HvvvvY2_%s (ij,ab) (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
 
     global_dpd_->buf4_scm(&Z_final, 0);
@@ -323,7 +323,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_close(&Z_final);
         //global_dpd_->buf4_close(&X2new); /* Need to close X2new to avoid collisions */
         //sprintf(lbl, "New X_%s_IjAb (%5.3f)", pert, omega);
-        sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert, omega);
+        sprintf(lbl, "HvvvvY2_%s (ij,ab) (%5.3f)", pert, omega);
         global_dpd_->buf4_sort_axpy(&Z, PSIF_CC_LR, rspq, 0, 5, lbl, 1);
         global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); /* re-open X2new here */
         global_dpd_->buf4_close(&Z);
@@ -422,13 +422,13 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
         sprintf(lbl, "S_%s_(ab,ij)", pert);
         global_dpd_->buf4_init(&S, PSIF_CC_TMP0, irrep, 5, 0, 8, 3, 0, lbl);
         //sprintf(lbl, "New Y_%s_IjAb (%5.3f)", pert, omega);
-        sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert, omega);
+        sprintf(lbl, "HvvvvY2_%s (ij,ab) (%5.3f)", pert, omega);
         global_dpd_->buf4_sort_axpy(&S, PSIF_CC_LR, rspq, 0, 5, lbl, 1);
         global_dpd_->buf4_close(&S);
         sprintf(lbl, "A_%s_(ab,ij)", pert);
         global_dpd_->buf4_init(&A, PSIF_CC_TMP0, irrep, 5, 0, 9, 4, 0, lbl);
         //sprintf(lbl, "New Y_%s_IjAb (%5.3f)", pert, omega);
-        sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert, omega);
+        sprintf(lbl, "HvvvvY2_%s (ij,ab) (%5.3f)", pert, omega);
         global_dpd_->buf4_sort_axpy(&A, PSIF_CC_LR, rspq, 0, 5, lbl, 1);
         global_dpd_->buf4_close(&A);
         global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); // re-open X2new here /
@@ -461,7 +461,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     //global_dpd_->buf4_close(&Y2new); // Need to close X2new to avoid collisions /
     global_dpd_->buf4_close(&Z_final);
     //sprintf(lbl, "New Y_%s_IjAb (%5.3f)", pert, omega);
-    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert, omega);
+    sprintf(lbl, "HvvvvY2_%s (ij,ab) (%5.3f)", pert, omega);
     global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_LR, qpsr, 0, 5, lbl, -1);
     //global_dpd_->buf4_init(&Y2new, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); // re-open X2new here 
     global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
@@ -478,17 +478,16 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&Z);
 
-/*
+
            Y2_norm = global_dpd_->buf4_dot_self(&Z_final);
            Y2_norm = sqrt(Y2_norm);
            outfile->Printf("\n\tHvvvvY form Y2, omega: %20.15f\n", Y2_norm);
            outfile->Printf("\t pert: %s\n", pert);  
 	   outfile->Printf("\t omega: %2.2f\n", omega);
            outfile->Printf("\t omega: %d\n", irrep);
-*/
 
     global_dpd_->buf4_axpy(&Z_final, &Y2new, 0.5);
-   
+
     global_dpd_->buf4_close(&Z_final);
 
 //########################END TEST##############################################

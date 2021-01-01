@@ -351,6 +351,10 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     //tmp  += 0.5*np.einsum('fabc,jkfa->jckb',self.Hvvvv,self.y2_A)
     //tmp  += 0.5*np.einsum('facb,kjfa->jckb',self.Hvvvv,self.y2_A)
 
+//    sprintf(lbl, "HvvvvY2 (ij,ab) (%5.3f)", pert_x, omega_x);
+//    global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
+
+/*
     sprintf(lbl, "HvvvvY2(ij,ab) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
 
@@ -521,6 +525,7 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->contract444(&Z2, &I, &Zfinal, 0, 1, 1, 1);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&Z2);
+*/
 
 /*
            Y1_norm = global_dpd_->buf4_dot_self(&Zfinal);
@@ -530,24 +535,43 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
            outfile->Printf("\t pert_y: %s \n", pert_y);
            outfile->Printf("\t pert_z: %s \n", pert_z);
            outfile->Printf("\t irrep: %d\n", irrep_x);
+
+    sprintf(lbl, "HvvvvY2_%s (ij,ab) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Z2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
+
+           Y1_norm = global_dpd_->buf4_dot_self(&Z2);
+           Y1_norm = sqrt(Y1_norm);
+           outfile->Printf("\n\tHvvvvY2: %20.15f \n", Y1_norm);
+           outfile->Printf("\t pert_x: %s \n", pert_x);
+           outfile->Printf("\t pert_y: %s \n", pert_y);
+           outfile->Printf("\t pert_z: %s \n", pert_z);
+           outfile->Printf("\t irrep: %d\n", irrep_x);
+           outfile->Printf("\n\t================================== \n");
+
+    global_dpd_->buf4_close(&Z2); 
 */
 
-    sprintf(lbl, "HvvvvY2(ia,jb) (%5.3f)", pert_x, omega_x);
+
+//HERE......
+
+    sprintf(lbl, "HvvvvY2_%s (ij,ab) (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
+
+    sprintf(lbl, "HvvvvY2_%s (ia,jb) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_sort(&Zfinal, PSIF_CC_LR, psqr, 10, 10, lbl);
 
+//    sprintf(lbl, "HvvvvY2_%s (ja,ib) (%5.3f)", pert_x, omega_x);
+//    global_dpd_->buf4_sort(&Zfinal, PSIF_CC_LR, qrps, 10, 10, lbl);
+//    global_dpd_->buf4_close(&Zfinal);
 
-    sprintf(lbl, "HvvvvY2(ja,ib) (%5.3f)", pert_x, omega_x);
-    global_dpd_->buf4_sort(&Zfinal, PSIF_CC_LR, qrps, 10, 10, lbl);
-    global_dpd_->buf4_close(&Zfinal);
-
-    sprintf(lbl, "HvvvvY2(ia,jb) (%5.3f)", pert_x, omega_x);
+    sprintf(lbl, "HvvvvY2_%s (ia,jb) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, 0, 10, 10, 10, 10, 0, lbl);
     //global_dpd_->buf4_axpy(&Zfinal, &Z, -0.5); 
     global_dpd_->buf4_axpy(&Zfinal, &Z, -1.0); 
     global_dpd_->buf4_close(&Zfinal);     
 
 
-    sprintf(lbl, "HvvvvY2(ja,ib) (%5.3f)", pert_x, omega_x);
+    sprintf(lbl, "HvvvvY2_%s (ja,ib) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, 0, 10, 10, 10, 10, 0, lbl);
     //global_dpd_->buf4_axpy(&Zfinal, &Z, -0.5); 
     global_dpd_->buf4_close(&Zfinal);
