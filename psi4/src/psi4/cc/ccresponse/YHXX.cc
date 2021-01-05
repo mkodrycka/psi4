@@ -317,8 +317,9 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     global_dpd_->contract444(&W, &Y2, &Z2, 0, 1, 1.0, 0.0); 
 
-           Y1_norm = global_dpd_->buf4_dot_self(&Z2);
-           Y1_norm = sqrt(Y1_norm);
+
+//           Y1_norm = global_dpd_->buf4_dot_self(&Z2);
+//           Y1_norm = sqrt(Y1_norm);
 //           outfile->Printf("\n\tNorm of WMnIjY2 Z2:!!!!! %20.15f\n", Y1_norm);
 
     global_dpd_->buf4_close(&W);
@@ -327,6 +328,7 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_sort(&Z2, PSIF_CC_TMP0, qspr, 10, 10, "Z2 (ia,jb)"); //Are the same?
     global_dpd_->buf4_sort(&Z2, PSIF_CC_TMP0, prqs, 10, 10, "Z2 (jb,ia)"); //Are the same?
     global_dpd_->buf4_close(&Z2);
+
 
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z2 (ia,jb)");
     //global_dpd_->buf4_axpy(&Z2, &Z, -0.5);
@@ -337,16 +339,23 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     //global_dpd_->buf4_axpy(&Z2, &Z, -0.5);
     global_dpd_->buf4_close(&Z2);
 
-/*   IT IS NOT WORKING!!!!!
 
+//   IT IS NOT WORKING!!!!!
+
+/*
     sprintf(lbl, "WMnIjY2_%s_ijab (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&WY, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     
     sprintf(lbl, "WMnIjY2_%s_iajb (%5.3f)", pert_x, omega_x); 
     global_dpd_->buf4_sort(&WY, PSIF_CC_LR, qrps, 10, 10, lbl);
+    global_dpd_->buf4_close(&WY);
+
+    sprintf(lbl, "WMnIjY2_%s_iajb (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&WY, PSIF_CC_LR, irrep_x, 10, 10, 10, 10, 0, lbl); 
     global_dpd_->buf4_axpy(&WY, &Z, -1.0);
     global_dpd_->buf4_close(&WY);
 */
+
 
     //tmp  += 0.5*np.einsum('fabc,jkfa->jckb',self.Hvvvv,self.y2_A)
     //tmp  += 0.5*np.einsum('facb,kjfa->jckb',self.Hvvvv,self.y2_A)
@@ -723,8 +732,9 @@ outfile->Printf("\n=========================================\n", Y1_norm);
     global_dpd_->file2_close(&X1);
     global_dpd_->file2_close(&z_ia);
 
+   // Intermediate? YES!
 
-   // Intermediate????
+/*
     sprintf(lbl, "G_%s_MI (%5.3f) test", pert_x, omega_x);
     global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep_x, 0, 0, lbl);
 
@@ -734,12 +744,12 @@ outfile->Printf("\n=========================================\n", Y1_norm);
     sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     global_dpd_->contract442(&tIjAb, &Y2, &GMI, 0, 0, 1, 0);
- 
-    //sprintf(lbl, "G_%s_IA (%5.3f)", pert_x, omega_x);
-    //global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep_x, 0, 0, lbl);
-
     global_dpd_->buf4_close(&Y2);
     global_dpd_->buf4_close(&tIjAb);
+*/
+
+    sprintf(lbl, "G_%s_MI (%5.3f)", pert_x, omega_x);
+    global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep_x, 0, 0, lbl);
 
     result -= global_dpd_->file2_dot(&GMI, &z_ij);
 
@@ -773,9 +783,9 @@ outfile->Printf("\n=========================================\n", Y1_norm);
     global_dpd_->file2_close(&X1);
     global_dpd_->file2_close(&z_ia);
 
-
-   // Intermediate????
-    sprintf(lbl, "G_%s_MI (%5.3f) test", pert_x, omega_x);
+    // Intermediate? YES!
+    //sprintf(lbl, "G_%s_MI (%5.3f) test", pert_x, omega_x);
+    sprintf(lbl, "G_%s_MI (%5.3f)", pert_x, omega_x);
     global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep_x, 0, 0, lbl);
 
     result -= global_dpd_->file2_dot(&GMI, &z_ij);

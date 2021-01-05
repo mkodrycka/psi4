@@ -207,7 +207,7 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_close(&GAE);
 
     // Y1 RHS += -Gmn*Wmina 
-    sprintf(lbl, "G_%s_IA (%5.3f)", pert, omega);
+    sprintf(lbl, "G_%s_MI (%5.3f)", pert, omega);
     global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep, 0, 0, lbl);
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
     global_dpd_->dot14(&GMI, &W, &Y1new, 0, 0, -1.0, 1.0);

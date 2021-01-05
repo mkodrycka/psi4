@@ -45,9 +45,8 @@ void G_build(const char *pert, int irrep, double omega) {
     dpdbuf4 tIjAb, Y2;
     dpdfile2 GAE, GMI;
     char lbl[32];
-    double Y1_norm;
 
-        sprintf(lbl, "G_%s_IA (%5.3f)", pert, omega);
+        sprintf(lbl, "G_%s_MI (%5.3f)", pert, omega);
         global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep, 0, 0, lbl);
 
         /* Y(Mj,Ab) * [ 2 Y(Ij,Ab) - Y(Ij,Ba) ] --> G(M,I) */
