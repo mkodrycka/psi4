@@ -123,6 +123,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     // *** <O|L1(0)|[Hbar(0), X1]|0> ***
 
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 5, 0, 5, 0, "Z (ij,ab)");
+
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1"); 
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
     global_dpd_->contract424(&W, &L1, &Z, 3, 0, 0, -1, 0);
