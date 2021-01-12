@@ -480,12 +480,14 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&Z);
 
 
+    /*
            Y2_norm = global_dpd_->buf4_dot_self(&Z_final);
            Y2_norm = sqrt(Y2_norm);
            outfile->Printf("\n\tHvvvvY form Y2, omega: %20.15f\n", Y2_norm);
            outfile->Printf("\t pert: %s\n", pert);  
 	   outfile->Printf("\t omega: %2.2f\n", omega);
            outfile->Printf("\t omega: %d\n", irrep);
+    */ 
 
     global_dpd_->buf4_axpy(&Z_final, &Y2new, 0.5);
 

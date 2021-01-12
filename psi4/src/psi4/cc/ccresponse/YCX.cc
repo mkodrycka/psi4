@@ -85,9 +85,10 @@ double YCX(const char *pert_y, int irrep_y, double omega_y, const char *pert_c, 
 
     sprintf(lbl, "Y_%s_IA (%5.3f)", pert_y, omega_y);
     global_dpd_->file2_init(&Y1, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
-    hyper += global_dpd_->file2_dot(&z1, &Y1);
-    global_dpd_->file2_close(&Y1);
 
+    hyper += global_dpd_->file2_dot(&z1, &Y1);
+
+    global_dpd_->file2_close(&Y1);
     global_dpd_->file2_close(&z1);
 
     /*** Y2 * MuBAR * X1 + Y2 * MuBAR * X2 ***/
@@ -115,7 +116,9 @@ double YCX(const char *pert_y, int irrep_y, double omega_y, const char *pert_c, 
 
     global_dpd_->file2_init(&yt, PSIF_CC_OEI, 0, 0, 0, "Yt_IJ");
     global_dpd_->file2_init(&xc, PSIF_CC_TMP0, 0, 0, 0, "XC_IJ");
+
     hyper += global_dpd_->file2_dot(&yt, &xc);
+
     global_dpd_->file2_close(&xc);
     global_dpd_->file2_close(&yt);
 
@@ -162,6 +165,7 @@ double YCX(const char *pert_y, int irrep_y, double omega_y, const char *pert_c, 
 
     sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert_y, omega_y);
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep_y, 0, 5, 0, 5, 0, lbl);
+
     hyper += global_dpd_->buf4_dot(&Y2, &z2);
 
     global_dpd_->buf4_close(&Y2);

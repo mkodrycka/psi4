@@ -107,6 +107,19 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
         hyper += YHXX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);
         hyper += YHXX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
 
+        outfile->Printf("\n\t---------TEST--------\n");
+        outfile->Printf("\n\tomega_x: %2.2f", omega_x);
+        outfile->Printf("\n\tomega_y: %2.2f", omega_y);
+        outfile->Printf("\n\tomega_z: %2.2f", omega_z);
+
+
+        outfile->Printf("\n\tPert: %s", pert_x);
+        outfile->Printf("\n\tPert: %s", pert_y);
+        outfile->Printf("\n\tPert: %s", pert_z);   
+
+
+        outfile->Printf("\n\t------END TEST--------\n");
+
         outfile->Printf("\n\tHyper Final.... %20.15f\n", hyper);	
     }
 

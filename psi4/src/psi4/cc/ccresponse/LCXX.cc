@@ -153,11 +153,10 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
     global_dpd_->buf4_close(&l2);
 */
 
+    global_dpd_->file2_init(&z, PSIF_CC_TMP0, 0, 0, 1, "z_IA");
+
     sprintf(lbl, "LX_%s_ijka (%5.3f)", pert_x, omega_x);  
     global_dpd_->buf4_init(&z2, PSIF_CC_LR, irrep_x, 0, 10, 0, 10, 0, lbl);
-
-    global_dpd_->file2_init(&z, PSIF_CC_TMP0, 0, 0, 1, "z_IA"); 
-
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_y, omega_y);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep_y, 0, 5, 0, 5, 0, lbl);
     global_dpd_->contract442(&z2, &X2, &z, 2, 2, 1.0, 0.0);
@@ -218,7 +217,6 @@ double LCXX(const char *pert_c, int irrep_c, double omega_c, const char *pert_x,
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     global_dpd_->contract442(&z2, &X2, &z1, 2, 2, 1.0, 0.0);
-
     global_dpd_->file2_close(&z);
     global_dpd_->buf4_close(&X2);
 

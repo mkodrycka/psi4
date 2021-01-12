@@ -55,7 +55,7 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     int Gei, ei, e, i, Gef, Ge, Gf, E, I, af, fa, f;
     dpdfile2 F, z1, z2, GMI, GAE;
     dpdbuf4 Y2, W, WL, D, X2, lx_iajb;
-    dpdfile2 Y1, Y1new, X1, mu1, L1, lt, lx, lx_AB, Y1inhomo;
+    dpdfile2 Y1, Y1new, mu1, L1, lt, lx, lx_AB, Y1inhomo;
     dpdbuf4 L2, mu2;
     char lbl[32];
     double Y1_norm, Y2_norm;
@@ -157,8 +157,8 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     //global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); 
     //global_dpd_->dot13(&GAE,&W,&Y1new, 0, 0, -1.0, 1.0);
     //global_dpd_->buf4_close(&W); 
-     //global_dpd_->file2_close(&GAE); 
-    // Above code replaced to remove disk-space and memory bottlenecks 7/26/05, -TDC /
+    //global_dpd_->file2_close(&GAE); 
+    // Above code replaced to remove disk-space and memory bottlenecks /
     sprintf(lbl, "G_%s_AE (%5.3f)", pert, omega);
     global_dpd_->file2_init(&GAE, PSIF_CC_OEI, irrep, 1, 1, lbl);
     global_dpd_->file2_mat_init(&GAE);
