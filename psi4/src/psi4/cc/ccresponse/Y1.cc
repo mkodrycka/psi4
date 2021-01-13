@@ -315,9 +315,8 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract222(&z1, &L1, &Y1new, 1, 1, -1.0, 1.0);
     global_dpd_->file2_close(&z1);
 
-    sprintf(lbl, "Z_%s_AE", pert);
+    sprintf(lbl, "Z_%s_AE (%5.3f)", pert, omega);
     global_dpd_->file2_init(&z1, PSIF_CC_OEI, irrep, 1, 1, lbl);
-    global_dpd_->file2_scm(&z1, 0);
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
@@ -331,7 +330,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     outfile->Printf("\n\tPert: %s", pert);
     outfile->Printf("\n\tomega: %2.2f", omega);
     outfile->Printf("\n\tirrep: %d", irrep);
-    outfile->Printf("\n\tNorm of the z_1: %20.15f\n", &z1);
+    outfile->Printf("\n\tNorm of the z_1: %20.15f\n", Y1_norm);
 
     Y1_norm = 0;
     Y1_norm = global_dpd_->buf4_dot_self(&X2);
@@ -349,40 +348,6 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_close(&z1);
     global_dpd_->file2_close(&L1);
 
-
-//---------------------------
-    global_dpd_->file2_init(&z_ab, PSIF_CC_OEI, irrep, 1, 1, "TEST");
-    global_dpd_->file2_scm(&z_ab, 0);
-
-    sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-    global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-    global_dpd_->contract442(&X2, &D, &z_ab, 2, 2, -1.0, 0.0);
-
-    Y1_norm = 0;
-    Y1_norm = global_dpd_->file2_dot_self(&z_ab);
-    Y1_norm = sqrt(Y1_norm);
-
-    outfile->Printf("\n\t-----TEST-----"); 
-    outfile->Printf("\n\tPert: %s", pert);
-    outfile->Printf("\n\tomega: %2.2f", omega);
-    outfile->Printf("\n\tirrep: %d", irrep);
-    outfile->Printf("\n\tNorm of the z_1: %20.15f\n", &z1);
-
-    Y1_norm = 0;
-    Y1_norm = global_dpd_->buf4_dot_self(&X2);
-    Y1_norm = sqrt(Y1_norm);
-    outfile->Printf("\tNorm X2: %20.15f\n", Y1_norm);
-
-    Y1_norm = 0;
-    Y1_norm = global_dpd_->buf4_dot_self(&D);
-    Y1_norm = sqrt(Y1_norm);
-    outfile->Printf("\tNorm D: %20.15f\n", Y1_norm);
-
-    global_dpd_->buf4_close(&X2);
-    global_dpd_->buf4_close(&D);
-    global_dpd_->file2_close(&z_ab);
-//----------------------------
 
     // *** <O|L2(0)|[Hbar(0), X2]|0> ***
     

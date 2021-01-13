@@ -1235,27 +1235,23 @@ outfile->Printf("\n\tI am here2");
 
     //r_y2 +=  ndot('ijfb,af->ijab', self.l2, self.build_Gvv(self.Loovv, self.x2))
 
+    /*
     sprintf(lbl, "G_%s_vv (%5.3f)", pert, omega);
     global_dpd_->file2_init(&GAE, PSIF_CC_OEI, irrep, 1, 1, lbl);
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     global_dpd_->contract442(&D, &X2, &GAE, 2, 2, -1.0, 0.0); //Can we reuse it??
-
-    Y2_norm = 0;
-    Y2_norm = global_dpd_->file2_dot_self(&GAE);
-    Y2_norm = sqrt(Y2_norm);
-
-    outfile->Printf("\n\tPert: %s", pert);
-    outfile->Printf("\n\tomega: %2.2f", omega);
-    outfile->Printf("\n\tirrep: %d", irrep);
-    outfile->Printf("\n\tNorm of GAE: %20.15f\n", &GAE);
-
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&D);
+    */
 
+    sprintf(lbl, "Z_%s_AE (%5.3f)", pert, omega);
+    global_dpd_->file2_init(&GAE, PSIF_CC_OEI, irrep, 1, 1, lbl);
+        
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
-    global_dpd_->contract244(&GAE, &L2, &Y2new, 1, 2, 1, 1.0, 1.0);
+    global_dpd_->contract244(&GAE, &L2, &Y2new, 0, 2, 1, 1.0, 1.0);
+    //global_dpd_->contract244(&GAE, &L2, &Y2new, 0, 2, 1, 1.0, 1.0);
     global_dpd_->file2_close(&GAE);
     global_dpd_->buf4_close(&L2);
  
