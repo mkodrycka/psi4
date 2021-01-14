@@ -1167,7 +1167,7 @@ outfile->Printf("\n\tI am here2");
 
     //r_y2 -=  ndot('in,jnba->ijab', self.build_Goo(self.Loovv, self.x2), self.l2) 
 
-    sprintf(lbl, "G_%s_oo (%5.3f)", pert, omega);
+    sprintf(lbl, "G_%s_IJ (%5.3f)", pert, omega);
     global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep, 0, 0, lbl);
 
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");

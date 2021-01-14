@@ -323,6 +323,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
     global_dpd_->contract442(&X2, &D, &z1, 2, 2, -1.0, 0.0);
   
+/*
     Y1_norm = 0;
     Y1_norm = global_dpd_->file2_dot_self(&z1);
     Y1_norm = sqrt(Y1_norm);
@@ -341,6 +342,7 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     Y1_norm = global_dpd_->buf4_dot_self(&D);
     Y1_norm = sqrt(Y1_norm);
     outfile->Printf("\tNorm D: %20.15f\n", Y1_norm);
+*/
 
     global_dpd_->buf4_close(&X2);
     global_dpd_->buf4_close(&D);

@@ -72,11 +72,11 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
 
     if ((x_irrep ^ y_irrep ^ z_irrep ) == 0) {
         //if (omega_y != 0.0) { // we assume omega_x = -omega_y 
-        timer_on("linear terms");
 	//pert A: pert_x
         //pert B: pert_y
         //pert C: pert_z
 
+        timer_on("YCX terms"); 
         //<O|Y1(B)[Abar,X1(C)]|0>
         hyper += YCX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);
 
@@ -94,31 +94,24 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
 
         //<0|L1(B)|[C_bar,X1(A)]|0>
         hyper += YCX(pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x);
+        timer_off("YCX terms");
 
-        timer_off("linear terms");
-
+	timer_on("LCXX terms"); 	
         hyper += LCXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
         hyper += LCXX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);	
         hyper += LCXX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);       
+        timer_off("LCXX terms"); 
 
+        timer_on("LHXXX terms");
         hyper += LHXXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
+        timer_off("LHXXX terms");
 
+        timer_on("YHXX terms");
         hyper += YHXX(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y, pert_z, z_irrep, omega_z);
         hyper += YHXX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);
         hyper += YHXX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
+        timer_off("YHXX terms");
 
-        outfile->Printf("\n\t---------TEST--------\n");
-        outfile->Printf("\n\tomega_x: %2.2f", omega_x);
-        outfile->Printf("\n\tomega_y: %2.2f", omega_y);
-        outfile->Printf("\n\tomega_z: %2.2f", omega_z);
-
-
-        outfile->Printf("\n\tPert: %s", pert_x);
-        outfile->Printf("\n\tPert: %s", pert_y);
-        outfile->Printf("\n\tPert: %s", pert_z);   
-
-
-        outfile->Printf("\n\t------END TEST--------\n");
 
         outfile->Printf("\n\tHyper Final.... %20.15f\n", hyper);	
     }
