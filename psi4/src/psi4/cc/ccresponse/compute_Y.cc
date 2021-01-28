@@ -242,6 +242,13 @@ void compute_Y(const char *pert, int irrep, double omega) {
            Y2_norm = sqrt(Y2_norm);
            outfile->Printf("\tNorm of the updated Y2 amplitudes...... %20.15f\n", Y2_norm);
 
+           sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);
+           global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+           Y2_norm = global_dpd_->buf4_dot_self(&Y2);
+           global_dpd_->buf4_close(&Y2);
+           Y2_norm = sqrt(Y2_norm);
+           outfile->Printf("\tNorm of the old Y2 amplitudes...... %20.15f\n", Y2_norm);
+
            //END TEST
 
         rms = converged_Y(pert, irrep, omega);

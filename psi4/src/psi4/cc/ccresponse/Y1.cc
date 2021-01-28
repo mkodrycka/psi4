@@ -650,15 +650,14 @@ void Y1_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&lx_iajb);
     global_dpd_->buf4_close(&W);
 
-
-    /*
+/*
     Y1_norm = 0;
     Y1_norm = global_dpd_->file2_dot_self(&Y1new);
     Y1_norm = sqrt(Y1_norm);
     outfile->Printf("\tNorm of the Y1new part1i_Final.... %20.15f\n", Y1_norm);
-    */
 
     global_dpd_->file2_close(&Y1new);
+*/
 
     return;
 }

@@ -74,12 +74,21 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_init(&Y1inhomo, PSIF_CC_OEI, irrep, 0, 1, lbl);
 
     global_dpd_->file2_axpy(&Y1inhomo, &Y1new, 1, 0);
-    global_dpd_->file2_close(&Y1new);
+    //global_dpd_->file2_close(&Y1new);
+    global_dpd_->file2_close(&Y1inhomo);
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\tNorm of Y1:.... %20.15f\n", Y1_norm);
+
+
+    //global_dpd_->file2_close(&Y1new);
 
     sprintf(lbl, "New Y_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&Y1new, PSIF_CC_OEI, irrep, 0, 1, lbl);
     global_dpd_->file2_axpy(&Y1, &Y1new, omega, 0);
-
+    
     // Y1 RHS += Yie*Fea
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "FAE");
     global_dpd_->contract222(&Y1, &F, &Y1new, 0, 1, 1.0, 1.0);
@@ -210,9 +219,15 @@ void Y1_homogenous_build(const char *pert, int irrep, double omega) {
     sprintf(lbl, "G_%s_MI (%5.3f)", pert, omega);
     global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep, 0, 0, lbl);
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
+    //global_dpd_->dot24(&GMI, &W, &Y1new, 0, 0, -1.0, 1.0);
     global_dpd_->dot14(&GMI, &W, &Y1new, 0, 0, -1.0, 1.0);
     global_dpd_->buf4_close(&W);
     global_dpd_->file2_close(&GMI);
+
+    Y1_norm = 0;
+    Y1_norm = global_dpd_->file2_dot_self(&Y1new);
+    Y1_norm = sqrt(Y1_norm);
+    outfile->Printf("\n\tNorm of Y1 Final:.... %20.15f\n", Y1_norm);
 
     if (params.local && local.filter_singles)
         local_filter_T1(&Y1new);

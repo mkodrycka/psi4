@@ -51,7 +51,6 @@ double YC(const char *pert_y, int irrep_y, double omega_y, const char *pert_c, i
     dpdfile2 Y1, mu1;
     dpdbuf4 Y2, mu2;
     char lbl[32];
-    double Y1_norm;
 
     /*** <0|Y1(B) * A_bar|0> ***/
 
@@ -73,7 +72,7 @@ double YC(const char *pert_y, int irrep_y, double omega_y, const char *pert_c, i
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep_y, 0, 5, 0, 5, 0, lbl);
 
     polar +=  0.5 * global_dpd_->buf4_dot(&mu2, &Y2);
-   
+
     global_dpd_->buf4_close(&mu2);
     global_dpd_->buf4_close(&Y2); 
 

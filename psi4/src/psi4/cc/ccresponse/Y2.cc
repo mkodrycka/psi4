@@ -123,7 +123,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
 
     global_dpd_->buf4_axpy(&Z, &Y2new, 1);
 
- 
     // ****<O|L2(0)|A_bar|phi^ab_ij>****
 
     sprintf(lbl, "%sBAR_AE", pert);
@@ -137,7 +136,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract244(&mu1, &L2, &Y2new, 1, 0, 0, -1.0, 1.0);
     global_dpd_->file2_close(&mu1);
     global_dpd_->buf4_close(&L2);
-
 
     // ****<O|L1(0)|[Hbar(0), X1]|phi^ab_ij>****
 
@@ -373,14 +371,24 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_sort(&LX, PSIF_CC_LR, qpsr, 0, 11, lbl);
     global_dpd_->buf4_close(&LX);
 
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z (ji,ba)");
+
     sprintf(lbl, "LX_%s_jiak (%5.3f)", pert, omega); 
     global_dpd_->buf4_init(&LX, PSIF_CC_LR, irrep, 0, 11, 0, 11, 0, lbl);
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
-    global_dpd_->contract444(&LX, &W, &Y2new, 0, 1, -1.0, 1.0); //Compute out of core!
+    global_dpd_->contract444(&LX, &W, &Z, 0, 1, -1.0, 0.0); //Compute out of core!
     global_dpd_->buf4_close(&LX);
     global_dpd_->buf4_close(&W); 
 
+    global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, qpsr, 0, 5, "Z (ij,ab)");
+    global_dpd_->buf4_close(&Z);
+
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z (ij,ab)");    
+    global_dpd_->buf4_axpy(&Z, &Y2new, 1);  
+    global_dpd_->buf4_close(&Z);
+
 /*
+// Optimize it!
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     global_dpd_->buf4_sort(&L2, PSIF_CC_LAMPS, rqps, 11, 10, "(2 LIjAb - LIjBa) (aj|ib)"); //Can we reuse it?
     global_dpd_->buf4_close(&L2); 
@@ -409,6 +417,10 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&Z2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "Z2 (ij,ab)");    
     global_dpd_->buf4_axpy(&Z2, &Y2new, 1);  
     global_dpd_->buf4_close(&Z2);
+
+           Y2_norm = global_dpd_->buf4_dot_self(&Y2new);
+           Y2_norm = sqrt(Y2_norm);
+           outfile->Printf("\n\tNorm of Y2 p1 test: !!!!! %20.15f\n", Y2_norm);
 */
 
     //tmp   = ndot('me,imbf->eibf', self.x1, self.l2)   //Contract x1 with Hvovv ???
@@ -496,6 +508,7 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z(ij,ab)");
     global_dpd_->buf4_axpy(&Z, &Y2new, 1);
     global_dpd_->buf4_close(&Z);
+
 
 /*
 //sort!!
@@ -626,6 +639,7 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&L2);
     global_dpd_->file2_close(&WX);
 
+
     //tmp   = ndot('me,fiea->mfia', self.x1, self.Hvovv, prefactor=2.0)
     //tmp  -= ndot('me,fiae->mfia', self.x1, self.Hvovv)
     //r_y2 += ndot('mfia,jmbf->ijab', tmp, self.l2)
@@ -688,7 +702,6 @@ void Y2_inhomogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->file2_mat_close(&X1);
     /* out-of-core algorithm done */
     global_dpd_->buf4_close(&W);
-
 
 /*
 outfile->Printf("\n\tI am here0");
@@ -896,6 +909,7 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z(ij,ab)");
     global_dpd_->buf4_axpy(&Z2, &Y2new, 1);
     global_dpd_->buf4_close(&Z2);
+
 //    **********************************************************************************
 
 
@@ -903,7 +917,7 @@ outfile->Printf("\n\tI am here2");
     //r_y2 += ndot('jine,enba->ijab', self.Hooov, tmp)
 
 /*
-    **********************REVISIT IT*******************************
+    //**********************REVISIT IT*******************************
     global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "Z (ij,kl)");
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 10, 0, 10, 0, "WMnIe");
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
@@ -929,9 +943,12 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_init(&Z2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "Z(ij,ab)");
     global_dpd_->buf4_axpy(&Z2, &Y2new, 1);
     global_dpd_->buf4_close(&Z2);
-*/
 
     //global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "Z (ij,kl)"); 
+*/
+
+//It is wrong
+//*******************************
 
     sprintf(lbl, "WX_%s_ijkl (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 0, 0, 0, 0, 0, lbl);
@@ -949,9 +966,20 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->contract444(&Z, &L2, &Z2, 0, 1, 1, 0);
     global_dpd_->buf4_close(&Z);
 
+    global_dpd_->buf4_sort(&Z2, PSIF_CC_TMP0, qpsr, 0, 5, "Z2(ij,ab)");
+    global_dpd_->buf4_close(&Z2);
+
+    global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z2(ij,ab)");
+
     global_dpd_->buf4_axpy(&Z2, &Y2new, 1);
     global_dpd_->buf4_close(&Z2);
 
+
+           Y2_norm = global_dpd_->buf4_dot_self(&Y2new);
+           Y2_norm = sqrt(Y2_norm);
+           outfile->Printf("\n\tNorm of Y2 p1 test: !!!!! %20.15f\n", Y2_norm);
+
+//**************************************8
     //tmp   = ndot('me,mina->eina', self.x1, self.Hooov, prefactor=2.0)
     //tmp  -= ndot('me,imna->eina', self.x1, self.Hooov)
     //r_y2 -= ndot('eina,njeb->ijab', tmp, self.l2)
@@ -990,7 +1018,6 @@ outfile->Printf("\n\tI am here2");
     //tmp  -= ndot('me,mine->in', self.x1, self.Hooov)
     //r_y2 -= ndot('in,jnba->ijab', tmp, self.l2)
 
-
 //sort
 //    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
 //    global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, psqr, 0, 10, "2WMnIe - WnMIe (MI,nE)");    
@@ -1012,6 +1039,7 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->contract244(&z, &L2, &Y2new, 1, 0, 0, -1, 1); 
     global_dpd_->file2_close(&z);
     global_dpd_->buf4_close(&L2);  
+
 
     // **** <O|L2(0)|[Hbar(0), X2]|phi^ab_ij> ****
 
@@ -1035,7 +1063,7 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_close(&Z);
 
- 
+
     //tmp   = ndot('ijfe,mnef->ijmn', self.get_MO('oovv'), self.x2, prefactor=0.5)        
     //r_y2 += ndot('ijmn,mnba->ijab', tmp, self.l2)        
  
@@ -1163,8 +1191,6 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_axpy(&Z2, &Y2new, -1);
     global_dpd_->buf4_close(&Z2);
 
-
-
     //r_y2 -=  ndot('in,jnba->ijab', self.build_Goo(self.Loovv, self.x2), self.l2) 
 
     sprintf(lbl, "G_%s_IJ (%5.3f)", pert, omega);
@@ -1190,6 +1216,7 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_axpy(&Z2, &Y2new, -1);
     global_dpd_->buf4_close(&Z2);
 
+
 /*
     sprintf(lbl, "G_%s_oo (%5.3f)", pert, omega);
     global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep, 0, 0, lbl);
@@ -1214,7 +1241,6 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_axpy(&Z2, &Y2new, -1);
     global_dpd_->buf4_close(&Z2);
 */
-
 
     //r_y2 -=  ndot('imab,jm->ijab', self.Loovv, self.build_Goo(self.l2, self.x2))
 
@@ -1254,7 +1280,7 @@ outfile->Printf("\n\tI am here2");
     //global_dpd_->contract244(&GAE, &L2, &Y2new, 0, 2, 1, 1.0, 1.0);
     global_dpd_->file2_close(&GAE);
     global_dpd_->buf4_close(&L2);
- 
+
     //r_y2 +=  ndot('ijae,be->ijab', self.Loovv, self.build_Gvv(self.l2, self.x2))
 
     sprintf(lbl, "G_%s_vv (%5.3f)", pert, omega);
@@ -1299,11 +1325,11 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_axpy(&Z2, &Y2new, -1);
     global_dpd_->buf4_close(&Z2);   
 
-    global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, irrep, 10, 10, 10, 10, 0, "Z2 (ij,ba)");
-    global_dpd_->buf4_axpy(&Z2, &Y2new, 2);
-    global_dpd_->buf4_close(&Z2);
+//    global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, irrep, 10, 10, 10, 10, 0, "Z2 (ij,ba)");
+//    global_dpd_->buf4_axpy(&Z2, &Y2new, 2);
+//    global_dpd_->buf4_close(&Z2);
 
-/*
+
     global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "Xl (ib|me)");
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 10, 10, 10, 10, 0, "(2 LIjAb - LIjBa) (ia|jb)");
     sprintf(lbl, "X_%s_IAjb (%5.3f)", pert, omega);
@@ -1321,21 +1347,20 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_sort(&Z2, PSIF_CC_LR, prsq, 0, 5, "Z2 (ij,ab)");
     global_dpd_->buf4_close(&Z2);
 
-    global_dpd_->buf4_init(&Z2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, "Z2 (ij,ab)");
+    //global_dpd_->buf4_init(&Z2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, "Z2 (ij,ab)");
     //global_dpd_->buf4_axpy(&Z2, &Y2new, -1);
-    global_dpd_->buf4_close(&Z2);
-*/
+    //global_dpd_->buf4_close(&Z2);
 
 //    global_dpd_->buf4_init(&Z2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, "Z2 (ij,ab)");
 //    global_dpd_->buf4_sort(&Z2, PSIF_CC_LR, qprs, 0, 5, "Z2 (ij,ab)");
 //    global_dpd_->buf4_axpy(&Z2, &Y2new, 2);
 //    global_dpd_->buf4_close(&Z2);
 
+//Can we emulate it above?
 
     //tmp   = ndot('njfb,mnef->jbme', self.l2, self.x2, prefactor=2.0)
     //r_y2 += ndot('imae,jbme->ijab', self.Loovv, tmp)
 
-/*
     global_dpd_->buf4_init(&Z2, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "Z(ib|ja)");
     global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 10, 10, 10, 10, 0, "Xl (ib|me)"); //I am reusing
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");  
@@ -1351,12 +1376,10 @@ outfile->Printf("\n\tI am here2");
     global_dpd_->buf4_init(&Z2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, "Z2 (ij,ab)");
     global_dpd_->buf4_axpy(&Z2, &Y2new, 1);
     global_dpd_->buf4_close(&Z2);
-*/
 
            Y2_norm = global_dpd_->buf4_dot_self(&Y2new);
            Y2_norm = sqrt(Y2_norm);
-           outfile->Printf("\n\tTODAY NORM Y2NEW FINAL!!!!! %20.15f\n", Y2_norm);
-
+           outfile->Printf("\n\tNorm Y2NEW FINAL p1!!!!! %20.15f\n", Y2_norm);
 
     global_dpd_->buf4_close(&Y2new);
 

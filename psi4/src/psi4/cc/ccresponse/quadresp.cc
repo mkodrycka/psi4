@@ -80,6 +80,7 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
         //<O|Y1(B)[Abar,X1(C)]|0>
         hyper += YCX(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x, pert_z, z_irrep, omega_z);
 
+        //outfile->Printf("\n\tHyper test: %20.15f\n", hyper);
         //<O|Y1(C)[Abar,X1(B)]|0>
         hyper += YCX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
 
@@ -112,8 +113,7 @@ void quadresp(double *tensor, double A, double B, const char *pert_x, int x_irre
         hyper += YHXX(pert_z, z_irrep, omega_z, pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
         timer_off("YHXX terms");
 
-
-        outfile->Printf("\n\tHyper Final.... %20.15f\n", hyper);	
+        outfile->Printf("\n\tHyper Final.... %20.12f\n", hyper);	
     }
 
      //hyper = hyper_YCX;

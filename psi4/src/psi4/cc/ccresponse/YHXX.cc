@@ -125,6 +125,10 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_init(&YF, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_axpy(&YF, &Z, -1); 
 
+    global_dpd_->buf4_sort_axpy(&YF, PSIF_CC_TMP0, qpsr, 0, 5, "Z (ij,ab)", -1);
+    global_dpd_->buf4_close(&YF);
+
+    /*
     sprintf(lbl, "YF_%s_jiba (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_sort(&YF, PSIF_CC_LR, qpsr, 0, 5, lbl);
     global_dpd_->buf4_close(&YF);
@@ -133,6 +137,7 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_init(&YF, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_axpy(&YF, &Z, -1);    
     global_dpd_->buf4_close(&YF);
+    */
 
     //global_dpd_->buf4_axpy(&Z2, &Z, 1);
     //global_dpd_->buf4_close(&Z2);
@@ -152,6 +157,12 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
 
     //global_dpd_->buf4_axpy(&Z2, &Z, -1);
 
+    global_dpd_->buf4_sort_axpy(&Z2, PSIF_CC_TMP0, pqsr, 0, 5, "Z (ij,ab)", -1);
+    global_dpd_->buf4_sort_axpy(&Z2, PSIF_CC_TMP0, qprs, 0, 5, "Z (ij,ab)", -1);
+    global_dpd_->buf4_close(&Z2);
+    
+
+    /*
     sprintf(lbl, "WMnIeY1_%s_ijba (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_sort(&Z2, PSIF_CC_HBAR, pqsr, 0, 5, lbl);   //sort
     sprintf(lbl, "WMnIeY1_%s_jiab (%5.3f)", pert_x, omega_x);
@@ -167,6 +178,7 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_init(&Z2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, lbl); 
     global_dpd_->buf4_axpy(&Z2, &Z, -1);  
     global_dpd_->buf4_close(&Z2);
+    */
 
    
 
@@ -187,10 +199,13 @@ double Y1HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_close(&W);
 */
 
+    //THE MOST EXPENSIVE CONTRACTION in this contribution
+    timer_on("WAmEFxY1 contraction");
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z2 (ij,ab)");
-    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 5, 10, 5, 0, "WAmEf 2(mA,Ef) - (mA,fE)");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 5, 10, 5, 0, "WAmEf 2(mA,Ef) - (mA,fE)"); //Compute out of core
     global_dpd_->contract424(&W, &Y1, &Z2, 1, 1, 1, 1, 0);   
     global_dpd_->buf4_close(&W); 
+    timer_off("WAmEFxY1 contraction");
 
     global_dpd_->buf4_axpy(&Z2, &Z, 1);
 
@@ -268,14 +283,18 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_axpy(&YW, &Z, -1.0);
     //global_dpd_->buf4_close(&YW);
 
+    global_dpd_->buf4_sort_axpy(&YW, PSIF_CC_TMP0, rspq, 10, 10, "Z (ia,jb)", -1);
+    global_dpd_->buf4_close(&YW);
+
+    /* 
     sprintf(lbl, "Y2WMbej_%s_jbia (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_sort(&YW, PSIF_CC_LR, rspq, 10, 10, lbl);
     global_dpd_->buf4_close(&YW);
 	
-    //sprintf(lbl, "Y2WMbej_%s_jbia (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&YW, PSIF_CC_LR, irrep_x, 10, 10, 10, 10, 0, lbl);
     global_dpd_->buf4_axpy(&YW, &Z, -1.0);
     global_dpd_->buf4_close(&YW);
+    */
 
 /*
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 11, 10, 11, 0, "WMbEj");
@@ -297,6 +316,10 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_init(&YW, PSIF_CC_LR, irrep_x, 10, 10, 10, 10, 0, lbl);
     global_dpd_->buf4_axpy(&YW, &Z, 1.0);
 
+    global_dpd_->buf4_sort_axpy(&YW, PSIF_CC_TMP0, rspq, 10, 10, "Z (ia,jb)", 1);
+    global_dpd_->buf4_close(&YW);
+
+/*
     sprintf(lbl, "Y2WMbEj_%s_jbia (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_sort(&YW, PSIF_CC_LR, rspq, 10, 10, lbl);
     global_dpd_->buf4_close(&YW);
@@ -304,9 +327,22 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_init(&YW, PSIF_CC_LR, irrep_x, 10, 10, 10, 10, 0, lbl); 
     global_dpd_->buf4_axpy(&YW, &Z, 1.0);
     global_dpd_->buf4_close(&YW);
+*/
 
     //tmp  += 0.5*np.einsum('kjin,nibc->jckb',self.Hoooo,self.y2_A)        
     //tmp  += 0.5*np.einsum('jkin,nicb->jckb',self.Hoooo,self.y2_A)
+
+//--------REVISIT IT 14/01/21---------------
+
+/*
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
+    sprintf(lbl, "Y_%s_jIbA (%5.3f)", pert_x, omega_x);
+    global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->contract444(&W, &Y2, &Z2, 0, 1, 1.0, 0.0);
+
+    global_dpd_->buf4_sort_axpy(&Z2, PSIF_CC_TMP0, qrps, 10, 10, "Z (ia,jb)", 1);
+    global_dpd_->buf4_close(&Z2);
+*/   
 
     //sort
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
@@ -329,7 +365,7 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_close(&Y2);
 
     global_dpd_->buf4_sort(&Z2, PSIF_CC_TMP0, qspr, 10, 10, "Z2 (ia,jb)"); //Are the same?
-    global_dpd_->buf4_sort(&Z2, PSIF_CC_TMP0, prqs, 10, 10, "Z2 (jb,ia)"); //Are the same?
+//    global_dpd_->buf4_sort(&Z2, PSIF_CC_TMP0, prqs, 10, 10, "Z2 (jb,ia)"); //Are the same?
     global_dpd_->buf4_close(&Z2);
 
 
@@ -338,9 +374,9 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_axpy(&Z2, &Z, -1.0);
     global_dpd_->buf4_close(&Z2);
 
-    global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z2 (jb,ia)");
+    //global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z2 (jb,ia)");
     //global_dpd_->buf4_axpy(&Z2, &Z, -0.5);
-    global_dpd_->buf4_close(&Z2);
+    //global_dpd_->buf4_close(&Z2);
 
 
 //   IT IS NOT WORKING!!!!!
@@ -569,6 +605,10 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     sprintf(lbl, "HvvvvY2_%s (ij,ab) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
 
+    global_dpd_->buf4_sort_axpy(&Zfinal, PSIF_CC_TMP0, psqr, 10, 10, "Z (ia,jb)", -1);
+    global_dpd_->buf4_close(&Zfinal);  
+
+/*
     sprintf(lbl, "HvvvvY2_%s (ia,jb) (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_sort(&Zfinal, PSIF_CC_LR, psqr, 10, 10, lbl);
 
@@ -587,6 +627,7 @@ double Y2HX1X1(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_init(&Zfinal, PSIF_CC_LR, 0, 10, 10, 10, 10, 0, lbl);
     //global_dpd_->buf4_axpy(&Zfinal, &Z, -0.5); 
     global_dpd_->buf4_close(&Zfinal);
+*/
 
 /*    
     //TEST
@@ -670,6 +711,8 @@ outfile->Printf("\n=========================================\n", Y1_norm);
     global_dpd_->file2_close(&z_ia);
     global_dpd_->file2_close(&X1);
 
+
+//I finished here.
 
     //tmp = np.einsum('ijab,ijdb->ad',self.t2,self.y2_A)
     //tmp = np.einsum('ld,ad->la',self.x1_C,tmp)
@@ -879,9 +922,9 @@ double Y2HX2X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->buf4_close(&XD);
     global_dpd_->buf4_close(&Z);
     
-
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "Z (ij,kl)");
     sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert_x, omega_x);
+ 
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep_x, 0, 5, 0, 5, 0, lbl);
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_y, omega_y);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep_y, 0, 5, 0, 5, 0, lbl);
@@ -894,7 +937,6 @@ double Y2HX2X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
     global_dpd_->contract444(&Z, &D, &Z_final, 1, 1, 1, 0);
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_close(&Z);
-
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert_z, omega_z);
     global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep_z, 0, 5, 0, 5, 0, lbl);
@@ -910,6 +952,7 @@ double Y2HX2X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
     //self.Bcon1 += np.einsum('jlac,jlac->',tmp,self.Goovv) 
 
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z (ia,jb)");
+
     sprintf(lbl, "Y_%s_IAjb (%5.3f)", pert_x, omega_x);
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep_x, 10, 10, 10, 10, 0, lbl);
     sprintf(lbl, "X_%s_IbjA (%5.3f)", pert_y, omega_y);
@@ -974,6 +1017,7 @@ double Y2HX2X2(const char *pert_x, int irrep_x, double omega_x, const char *pert
 
     //tmp = np.einsum("ijab,ijac->bc",self.x2_B,self.Loovv)  
     //tmp = np.einsum("bc,klcd->klbd",tmp,self.x2_C)
+    //self.Bcon1 -= np.einsum("klbd,klbd->",tmp,self.y2_A)
 
 /*
      sprintf(lbl, "z_%s_ab (%5.3f)", pert_y, omega_y);
@@ -1964,7 +2008,9 @@ double YHXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y,
 
     // *** <O|Y1(A)[[Hbar(0),X1(B),X1(C)]]|0> ***
 
+    timer_on("Y1HX1X1 terms"); 
     hyper += Y1HX1X1(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z); 
+    timer_off("Y1HX1X1 terms");
 
    // ***  <O|Y2(A)|[[Hbar(0),X1(B)],X1(C)]|0> ***
 
@@ -1972,11 +2018,15 @@ double YHXX(const char *pert_x, int irrep_x, double omega_x, const char *pert_y,
 
    // ***  <O|Y2(A)|[[Hbar(0),X2(B)],X2(C)]|0> ***
 
+    timer_on("Y2HX2X2 terms");
     hyper += Y2HX2X2(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);    
+    timer_off("Y2HX2X2 terms");
 
    // *** <O|Y1(A)[[Hbar(0),X1(B)],X2(C)]]|0> ***  
    
+    timer_on("Y1HX1X2 terms");
     hyper += Y1HX1X2(pert_x, irrep_x, omega_x, pert_y, irrep_y, omega_y, pert_z, irrep_z, omega_z);
+    timer_off("Y1HX1X2 terms");
 
    // *** <O|Y2(A)[[Hbar(0),X1(B)],X2(C)]]|0> ***  
 

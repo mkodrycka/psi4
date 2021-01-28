@@ -69,9 +69,10 @@ void analyze(const char *pert, int irrep, double omega);
 
 void compute_X(const char *pert, int irrep, double omega) {
     int i, iter = 0, done = 0;
-    double rms, polar, X2_norm;
+    double rms, polar, X1_norm, X2_norm;
     char lbl[32];
     dpdbuf4 X2;
+    dpdfile2 X1new;
 
     timer_on("compute_X");
 
@@ -98,6 +99,7 @@ void compute_X(const char *pert, int irrep, double omega) {
             X2_build(pert, irrep, omega);
         }
         update_X(pert, irrep, omega);
+
         rms = converged(pert, irrep, omega);
         if (rms <= params.convergence) {
             done = 1;

@@ -78,7 +78,9 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_axpy(&Y2inhomo, &Y2new, 1);
     global_dpd_->buf4_close(&Y2inhomo);
 
-    sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);
+    //sprintf(lbl, "Y_%s_(2IjAb-IjbA) (%5.3f)", pert, omega); 
+    sprintf(lbl, "Y_%s_IjAb (%5.3f)", pert, omega);        //I changed this!!!
+    //sprintf(lbl, "Y_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Y2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_axpy(&Y2, &Y2new, 0.5*omega);    //Make sure about 0.5
 
@@ -131,9 +133,10 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     //sprintf(lbl, "New Y_%s_IjAb (%5.3f)", pert, omega);
     //global_dpd_->buf4_sort_axpy(&Y2new, PSIF_CC_LR, pqsr, 0, 5, lbl, -1);
     sprintf(lbl, "YF_%s_ijba (%5.3f)", pert, omega);
-    global_dpd_->buf4_sort(&Z, PSIF_CC_LR, pqsr, 0, 5, lbl);
+    //global_dpd_->buf4_sort(&Z, PSIF_CC_LR, pqsr, 0, 5, lbl);
+    global_dpd_->buf4_sort(&Z, PSIF_CC_LR, qprs, 0, 5, lbl);           // I corrected it!!
     global_dpd_->buf4_close(&Z);
- 
+
     sprintf(lbl, "YF_%s_ijba (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Z, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_axpy(&Z, &Y2new, -1);
@@ -158,13 +161,11 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&Y2);	
     global_dpd_->buf4_close(&Z); 
 
-
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); //Compute it out of core
     sprintf(lbl, "Y_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&Y1, PSIF_CC_OEI, irrep, 0, 1, lbl); 
     global_dpd_->contract244(&Y1, &W, &Y2new, 1, 0, 0, 1.0, 1.0);
     global_dpd_->buf4_close(&W);
-
     
     sprintf(lbl, "WMnIeY1_%s_ijab (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, lbl);
@@ -172,12 +173,13 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (nM,eI)"); 
     global_dpd_->contract424(&W, &Y1, &Z, 3, 0, 0, 1.0, 0);
     global_dpd_->buf4_axpy(&Z, &Y2new, -1);
-    //global_dpd_->contract424(&W, &Y1, &Y2new, 3, 0, 0, -1.0, 1.0);
+
     global_dpd_->file2_close(&Y1);
     global_dpd_->buf4_close(&W);
     global_dpd_->buf4_close(&Z);
 
 
+//Combine these two
     // r_y2 += ndot('ieam,mjeb->ijab', self.Hovvo, self.y2, prefactor=2.0)
     //sort
     //global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 11, 10, 11, 0, "WMbEj");
@@ -201,6 +203,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_axpy(&Z, &Y2new, 1.0);
     global_dpd_->buf4_close(&Z);
 
+
     //r_y2 += ndot('iema,mjeb->ijab', self.Hovov, self.y2, prefactor=-1.0)
 
     global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "Z (ia|jb)"); 
@@ -218,8 +221,8 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_axpy(&Z, &Y2new, 1.0);
     global_dpd_->buf4_close(&Z);
 
-    //r_y2 -= ndot('mibe,jema->ijab', self.y2, self.Hovov)
 
+    //r_y2 -= ndot('mibe,jema->ijab', self.y2, self.Hovov)
     /*
     //sort
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
@@ -275,7 +278,6 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->contract244(&GAE, &D, &Y2new, 1, 2, 1, 1.0, 1.0);
     global_dpd_->file2_close(&GAE);
 
-
     //sprintf(lbl, "G_%s_IA (%5.3f)", pert, omega);
     sprintf(lbl, "G_%s_MI (%5.3f)", pert, omega);
     global_dpd_->file2_init(&GMI, PSIF_CC_OEI, irrep, 0, 0, lbl);
@@ -285,6 +287,11 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
 
 
     //global_dpd_->buf4_close(&Y2new);
+
+    Y2_norm = 0;
+    Y2_norm = global_dpd_->buf4_dot_self(&Y2new);
+    Y2_norm = sqrt(Y2_norm);
+    outfile->Printf("\n\tNorm of Y2 test1:  %20.15f\n", Y2_norm);
 
 //##########################TEST################################################
 
@@ -314,7 +321,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&Z);
 */
 
-    if (params.abcd == "OLD") {
+//    if (params.abcd == "OLD") {
         sprintf(lbl, "Z(Ab,Ij) %s", pert);
         global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 5, 0, 5, 0, 0, lbl);
         global_dpd_->buf4_init(&I, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
@@ -329,6 +336,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_init(&Z_final, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); /* re-open X2new here */
         global_dpd_->buf4_close(&Z);
 
+/*
     } else if (params.abcd == "NEW") {
         timer_on("ABCD:new");
 
@@ -441,6 +449,7 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
 
         timer_off("ABCD:new");
     }
+*/
 
     sprintf(lbl, "Z(Ij,am) %s", pert);
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, irrep, 0, 11, 0, 11, 0, lbl);
@@ -479,21 +488,23 @@ void Y2_homogenous_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&Z);
 
+    Y2_norm = 0;
+    Y2_norm = global_dpd_->buf4_dot_self(&Z_final);
+    Y2_norm = sqrt(Y2_norm);
+    outfile->Printf("\n\tNorm of Z_final:.... %20.15f\n", Y2_norm);
 
-    /*
-           Y2_norm = global_dpd_->buf4_dot_self(&Z_final);
-           Y2_norm = sqrt(Y2_norm);
-           outfile->Printf("\n\tHvvvvY form Y2, omega: %20.15f\n", Y2_norm);
-           outfile->Printf("\t pert: %s\n", pert);  
-	   outfile->Printf("\t omega: %2.2f\n", omega);
-           outfile->Printf("\t omega: %d\n", irrep);
-    */ 
 
     global_dpd_->buf4_axpy(&Z_final, &Y2new, 0.5);
-
+    //global_dpd_->buf4_axpy(&Z_final, &Y2new, 1.0);
+    
     global_dpd_->buf4_close(&Z_final);
 
 //########################END TEST##############################################
+
+    Y2_norm = 0;
+    Y2_norm = global_dpd_->buf4_dot_self(&Y2new);
+    Y2_norm = sqrt(Y2_norm);
+    outfile->Printf("\n\tNorm of Y2 Final:.... %20.15f\n", Y2_norm);
 
 
     if (params.local)

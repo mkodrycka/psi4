@@ -104,9 +104,9 @@ void linresp_with_Yampl(double *tensor, double A, double B, const char *pert_x, 
             }
         } else {
             timer_on("linear terms");
-            polar = YC(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x);
-            //polar_LCX = LCX(pert_x, x_irrep, pert_y, y_irrep, 0.0);
-            //polar_LCX += LCX(pert_y, y_irrep, pert_x, x_irrep, 0.0);
+            polar_YC = YC(pert_y, y_irrep, 0.0, pert_x, x_irrep, 0.0); 
+            //polar = YC(pert_y, y_irrep, omega_y, pert_x, x_irrep, omega_x);
+            polar_LCX = LCX_with_Y(pert_y, 0.0, pert_x, x_irrep, 0.0);
             timer_off("linear terms");
             if (!params.sekino && !params.linear) {
                 if (params.wfn == "CC2") {
@@ -138,6 +138,7 @@ void linresp_with_Yampl(double *tensor, double A, double B, const char *pert_x, 
 
         if (params.print & 2) {
             outfile->Printf("\n\tLinresp tensor <<%s;%s>>\n", pert_x, pert_y);
+            outfile->Printf("\tpolar_YC    = %20.12f\n", polar_YC);
             outfile->Printf("\tpolar_LCX    = %20.12f\n", polar_LCX);
             if (params.wfn == "CC2") outfile->Printf("\tpolar_HXY    = %20.12f\n", polar_HXY);
             outfile->Printf("\tpolar_YC = %20.12f\n", polar_YC);
@@ -145,6 +146,9 @@ void linresp_with_Yampl(double *tensor, double A, double B, const char *pert_x, 
             outfile->Printf("\tpolar_LHX1Y2 = %20.12f\n", polar_LHX1Y2);
             outfile->Printf("\tpolar_LHX2Y2 = %20.12f\n", polar_LHX2Y2);
         }
+
+        outfile->Printf("\tpolar_YC    = %20.12f\n", polar_YC);
+        outfile->Printf("\tpolar_LCX    = %20.12f\n", polar_LCX);
 
         *tensor = A * polar + B * (*tensor);
     }
